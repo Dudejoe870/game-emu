@@ -1,0 +1,9 @@
+cmake_minimum_required (VERSION 3.8)
+
+add_library (gameemu-core-gbz80 SHARED "core_gbz80.cpp" "core_gbz80.h" "gameemu_interface.cpp")
+target_include_directories (gameemu-core-gbz80 PUBLIC "include")
+target_link_libraries (gameemu-core-gbz80 PRIVATE libgame-emu-common)
+
+add_custom_command(TARGET gameemu-core-gbz80 POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:gameemu-core-gbz80> $<TARGET_FILE_DIR:game-emu-cli>/cores
+)

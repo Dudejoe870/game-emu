@@ -8,6 +8,11 @@ if(NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR ${CMAKE_SYSTEM_NAME} STREQUAL
 	message(FATAL_ERROR "Unsupported Platform")
 endif()
 
+if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+	set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+endif()
+
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 add_subdirectory ("libgame-emu-common")
+add_subdirectory ("gameemu-core-gbz80")
 add_subdirectory ("game-emu-cli")
