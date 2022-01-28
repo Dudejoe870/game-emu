@@ -2,11 +2,12 @@
 
 #include <game-emu/common/stdcommon.h>
 
-#include <game-emu/common/core.h>
 #include <dynalo/dynalo.hpp>
 
 namespace GameEmu::Common
 {
+	class Core;
+
 	class CoreLoader
 	{
 	private:
@@ -15,6 +16,7 @@ namespace GameEmu::Common
 	public:
 		/*
 		 Loads all the DLL system cores from the coreSubdirectory (relative to the executable directory)
+		 Note: There is no guaranty of load order.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT CoreLoader(std::filesystem::path coreSubdirectory);
 

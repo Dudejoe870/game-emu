@@ -1,5 +1,7 @@
 #include <game-emu/common/coreloader.h>
 
+#include <game-emu/common/core.h>
+
 namespace GameEmu::Common
 {
 	CoreLoader::CoreLoader(std::filesystem::path coreSubdirectory)
@@ -25,6 +27,8 @@ namespace GameEmu::Common
 			auto GameEmuInitCore = lib.get_function<Core*(CoreLoader*)>("GameEmuInitCore");
 			cores.push_back(GameEmuInitCore(this));
 		}
+
+		for (Core* core : cores) core->LoadDependencies();
 	}
 
 	CoreLoader::~CoreLoader()

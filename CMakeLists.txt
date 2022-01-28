@@ -13,6 +13,9 @@ if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
+add_subdirectory ("args" EXCLUDE_FROM_ALL)
+
 add_subdirectory ("libgame-emu-common")
 add_subdirectory ("gameemu-core-gbz80")
+add_subdirectory ("gameemu-core-gb")
 add_subdirectory ("game-emu-cli")
