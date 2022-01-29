@@ -5,5 +5,6 @@ target_include_directories (gameemu-core-gbz80 PUBLIC "include")
 target_link_libraries (gameemu-core-gbz80 PRIVATE libgame-emu-common)
 
 add_custom_command(TARGET gameemu-core-gbz80 POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:gameemu-core-gbz80> $<TARGET_FILE_DIR:game-emu-cli>/cores
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:gameemu-core-gbz80> $<TARGET_FILE_DIR:game-emu-cli>/cores/$<TARGET_FILE_NAME:gameemu-core-gbz80>
+	VERBATIM
 )

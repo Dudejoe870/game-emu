@@ -15,7 +15,7 @@ namespace GameEmu::Common
 	int Core::addDependency(std::string coreName)
 	{
 		dependencies.push_back(loader->getLoadedCore(coreName));
-		return dependencies.size() - 1;
+		return (int)dependencies.size() - 1;
 	}
 
 	void Core::LoadDependencies()
