@@ -13,6 +13,13 @@ namespace GameEmu::Common
 	{
 	protected:
 		CoreLoader* loader;
+
+		std::vector<Core*> dependencies;
+
+		/*
+		 Adds a dependency and returns the index in which it is stored in the dependencies vector.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT int addDependency(std::string coreName);
 	public:
 		enum class Type
 		{
@@ -21,8 +28,10 @@ namespace GameEmu::Common
 			System // A System loads other cores together and invokes them.
 		};
 
-		// Properties common to all core instances.
-		std::unordered_map<std::string, PropertyValue> globalProperties;
+		inline const std::vector<Core*>& getDependencies()
+		{
+			return dependencies;
+		}
 
 		/*
 		 Initially loads the Core.
@@ -54,6 +63,6 @@ namespace GameEmu::Common
 		/*
 		 Creates a new Core instance. The caller is responsible for freeing the newly created instance.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreInstance* createNewInstance(std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unique_ptr<CoreInstance> createNewInstance(std::unordered_map<std::string, PropertyValue> properties = {});
 	};
 }

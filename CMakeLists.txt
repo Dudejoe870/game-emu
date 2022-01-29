@@ -12,8 +12,12 @@ if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 endif()
 
+set(ARGS_BUILD_EXAMPLE OFF)
+set(ARGS_BUILD_UNITTESTS OFF)
+
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 add_subdirectory ("args" EXCLUDE_FROM_ALL)
+add_subdirectory ("cli" EXCLUDE_FROM_ALL)
 
 add_subdirectory ("libgame-emu-common")
 add_subdirectory ("gameemu-core-gbz80")

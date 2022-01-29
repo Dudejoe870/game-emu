@@ -21,7 +21,7 @@ namespace GameEmu::Common
 		void Loop();
 	public:
 		Core* currentSystem;
-		CoreInstance* systemInstance;
+		std::unique_ptr<CoreInstance> systemInstance;
 
 		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop();
 		LIBGAMEEMU_COMMON_DLL_EXPORT ~RunLoop();
@@ -39,32 +39,58 @@ namespace GameEmu::Common
 		/*
 		 Stops the current loop.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Stop();
+		inline void Stop()
+		{
+			running.clear();
+		}
 
 		/*
 		 Pauses the current loop.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Pause();
+		inline void Pause()
+		{
+			paused.test_and_set();
+		}
 
 		/*
 		 Resumes the current loop if it has been previously paused.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Resume();
+		inline void Resume()
+		{
+			paused.clear();
+		}
+
+		/*
+		 Returns whether or not the current System Core is paused.
+		*/
+		inline bool isPaused()
+		{
+			return paused.test();
+		}
 
 		/*
 		 Returns whether or not the current System Core is running.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT bool isRunning();
+		inline bool isRunning()
+		{
+			return running.test();
+		}
 
 		/*
 		 This acquires the thread mutex basically stopping any Cores from running while the caller accesses any current Core states.
 		 It is heavily recommended to call this if accessing any Core states from outside threads (example: for debugging purposes)
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void AcquireLock();
+		inline void AcquireLock()
+		{
+			threadMutex.lock();
+		}
 
 		/*
 		 Unlocks the thread mutex. Call this after finishing access to the Core state.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Unlock();
+		inline void Unlock()
+		{
+			threadMutex.unlock();
+		}
 	};
 }

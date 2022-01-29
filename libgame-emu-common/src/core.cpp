@@ -12,6 +12,12 @@ namespace GameEmu::Common
 		this->loader = loader;
 	}
 
+	int Core::addDependency(std::string coreName)
+	{
+		dependencies.push_back(loader->getLoadedCore(coreName));
+		return dependencies.size() - 1;
+	}
+
 	void Core::LoadDependencies()
 	{
 	}
@@ -31,8 +37,8 @@ namespace GameEmu::Common
 		return Core::Type::Processor;
 	}
 
-	CoreInstance* Core::createNewInstance(std::unordered_map<std::string, PropertyValue> properties)
+	std::unique_ptr<CoreInstance> Core::createNewInstance(std::unordered_map<std::string, PropertyValue> properties)
 	{
-		return new CoreInstance(this, properties);
+		return std::make_unique<CoreInstance>(this, properties);
 	}
 }

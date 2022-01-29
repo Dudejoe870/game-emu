@@ -14,7 +14,6 @@ namespace GameEmu::Common
 	RunLoop::~RunLoop()
 	{
 		if (runThread.joinable()) runThread.join();
-		if (systemInstance) delete systemInstance;
 	}
 
 	void RunLoop::Loop()
@@ -42,7 +41,7 @@ namespace GameEmu::Common
 			if (!running.test() && runThread.joinable())
 				runThread.join();
 
-			if (systemInstance) delete systemInstance;
+			if (systemInstance) delete systemInstance.release();
 			systemInstance = currentSystem->createNewInstance(properties);
 
 			running.test_and_set();
@@ -54,35 +53,5 @@ namespace GameEmu::Common
 	{
 		if (core->getType() != Core::Type::System) return;
 		this->currentSystem = core;
-	}
-
-	void RunLoop::AcquireLock()
-	{
-		threadMutex.lock();
-	}
-
-	void RunLoop::Unlock()
-	{
-		threadMutex.unlock();
-	}
-
-	void RunLoop::Stop()
-	{
-		running.clear();
-	}
-
-	void RunLoop::Pause()
-	{
-		paused.test_and_set();
-	}
-
-	void RunLoop::Resume()
-	{
-		paused.clear();
-	}
-
-	bool RunLoop::isRunning()
-	{
-		return running.test();
 	}
 }

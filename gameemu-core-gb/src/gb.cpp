@@ -9,17 +9,12 @@ namespace GameEmu::Cores::System::GB
 		
 		this->properties["romfile"] = "";
 
-		this->z80 = (Processor::GBZ80::Instance*)this->gbCore->z80->createNewInstance();
-	}
-
-	Instance::~Instance()
-	{
-		if (z80) delete z80;
+		this->z80 = addInstance(this->gbCore->getDependencies()[this->gbCore->z80]);
 	}
 
 	Common::CoreInstance::ReturnStatus Instance::Step()
 	{
-		this->z80->Step();
+		this->instances[z80]->Step();
 		return ReturnStatus::Success;
 	}
 
@@ -35,7 +30,7 @@ namespace GameEmu::Cores::System::GB
 
 	void Core::LoadDependencies()
 	{
-		this->z80 = (Processor::GBZ80::Core*)loader->getLoadedCore("gameemu-core-gbz80");
+		this->z80 = addDependency("gameemu-core-gbz80");
 	}
 
 	std::string Core::getName()
@@ -53,8 +48,8 @@ namespace GameEmu::Cores::System::GB
 		return Common::Core::Type::System;
 	}
 
-	Common::CoreInstance* Core::createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties)
 	{
-		return new Instance(this, properties);
+		return std::make_unique<Instance>(this, properties);
 	}
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+// The Windows header define min and max macros for some reason??? Really stupid choice as they collide with std::min and std::max.
+#define NOMINMAX
+
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>

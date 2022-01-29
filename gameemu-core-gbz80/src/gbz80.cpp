@@ -27,8 +27,8 @@ namespace GameEmu::Cores::Processor::GBZ80
 		return Common::Core::Type::Processor;
 	}
 
-	Common::CoreInstance* Core::createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties)
 	{
-		return new Instance(this, properties);
+		return std::make_unique<Instance>(this, properties);
 	}
 }
