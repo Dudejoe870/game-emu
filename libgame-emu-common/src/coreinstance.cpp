@@ -4,14 +4,18 @@
 
 namespace GameEmu::Common
 {
-	CoreInstance::CoreInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
+	CoreInstance::CoreInstance(Core* core, 
+		const std::unordered_map<std::string, PropertyValue>& defaultProperties, 
+		const std::unordered_map<std::string, PropertyValue>& properties)
 	{
 		this->core = core;
+
+		this->properties = defaultProperties;
 
 		this->properties.insert(properties.begin(), properties.end());
 	}
 
-	int CoreInstance::addInstance(Core* core, std::unordered_map<std::string, PropertyValue> properties)
+	int CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
 		instances.push_back(core->createNewInstance(properties));
 		return (int)instances.size() - 1;

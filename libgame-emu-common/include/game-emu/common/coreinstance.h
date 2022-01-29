@@ -18,7 +18,7 @@ namespace GameEmu::Common
 		/*
 		 Adds a new core instance and returns the index at which it is stored in the instances vector.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT int addInstance(Core* core, std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT int addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties = {});
 	public:
 		enum class ReturnStatus
 		{
@@ -38,10 +38,20 @@ namespace GameEmu::Common
 
 		// KeyValue map Properties for this particular Core instance, value can be an int, string, float, or bool of any size.
 		std::unordered_map<std::string, PropertyValue> properties;
+		
+		LIBGAMEEMU_COMMON_DLL_EXPORT CoreInstance(Core* core, 
+			const std::unordered_map<std::string, PropertyValue>& defaultProperties, 
+			const std::unordered_map<std::string, PropertyValue>& properties);
 
-		LIBGAMEEMU_COMMON_DLL_EXPORT CoreInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties);
-
+		/*
+		 Steps the Cores logic.
+		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus Step();
+
+		/*
+		 Only applies to System cores.
+		 Is called when the System initially starts running, from the System core thread.
+		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus SystemInit();
 	};
 }

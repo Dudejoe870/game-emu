@@ -120,7 +120,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 		cli::SetColor();
 
-		auto rootMenu = std::make_unique<cli::Menu>("debug");
+		auto rootMenu = std::make_unique<cli::Menu>(core->getName());
 
 		std::unordered_map<Common::Core*, int> duplicateCounts;
 		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())

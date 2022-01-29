@@ -3,11 +3,9 @@
 namespace GameEmu::Cores::System::GB
 {
 	Instance::Instance(Common::Core* core, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::CoreInstance(core, properties)
+		: Common::CoreInstance(core, { { "romfile", "" } }, properties)
 	{
 		this->gbCore = (Core*)core;
-		
-		this->properties["romfile"] = "";
 
 		this->z80 = addInstance(this->gbCore->getDependencies()[this->gbCore->z80]);
 	}
@@ -26,6 +24,7 @@ namespace GameEmu::Cores::System::GB
 	Core::Core(Common::CoreLoader* loader)
 		: Common::Core(loader)
 	{
+		this->z80 = -1;
 	}
 
 	void Core::LoadDependencies()

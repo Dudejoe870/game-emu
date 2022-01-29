@@ -3,7 +3,7 @@
 namespace GameEmu::Cores::Processor::GBZ80
 {
 	Instance::Instance(Common::Core* core, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::CoreInstance(core, properties)
+		: Common::CoreInstance(core, { }, properties)
 	{
 	}
 
