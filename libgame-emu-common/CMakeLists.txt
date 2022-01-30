@@ -4,3 +4,4 @@ add_library (libgame-emu-common SHARED "src/core.cpp" "include/game-emu/common/c
 target_include_directories (libgame-emu-common PUBLIC "include")
 target_link_libraries(libgame-emu-common PUBLIC dynalo)
 target_compile_definitions(libgame-emu-common PRIVATE _LIBGAMEEMU_COMMON_DLL_EXPORT_SYMBOLS)
+set_target_properties(libgame-emu-common PROPERTIES PREFIX "")

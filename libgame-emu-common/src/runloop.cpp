@@ -20,17 +20,41 @@ namespace GameEmu::Common
 	{
 		systemInstance->SystemInit();
 
-		while (running.test())
+		while (running)
 		{
-			if (paused.test())
+			if (paused || systemInstance->paused)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(80));
 				continue;
 			}
 
 			threadMutex.lock();
+
 			systemInstance->Step();
+
+			if (!systemInstance->isMultithreaded())
+			{
+				for (const std::unique_ptr<CoreInstance>& instance : systemInstance->getInstances())
+					if (!instance->paused) instance->Step();
+			}
+
 			threadMutex.unlock();
+		}
+	}
+
+	void RunLoop::LoopCore(const std::unique_ptr<CoreInstance>& instance, int mutexIndex)
+	{
+		while (running)
+		{
+			if (paused || instance->paused)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(80));
+				continue;
+			}
+
+			coreMutexes[mutexIndex]->lock();
+			instance->Step();
+			coreMutexes[mutexIndex]->unlock();
 		}
 	}
 
@@ -38,14 +62,22 @@ namespace GameEmu::Common
 	{
 		if (currentSystem)
 		{
-			if (!running.test() && runThread.joinable())
+			if (!running && runThread.joinable())
 				runThread.join();
 
 			if (systemInstance) delete systemInstance.release();
 			systemInstance = currentSystem->createNewInstance(properties);
 
-			running.test_and_set();
+			running = true;
 			runThread = std::thread(&RunLoop::Loop, this);
+			if (systemInstance->isMultithreaded())
+			{
+				for (const std::unique_ptr<CoreInstance>& instance : systemInstance->getInstances())
+				{
+					coreMutexes.push_back(std::make_unique<std::mutex>());
+					coreThreads.push_back(std::thread(&RunLoop::LoopCore, this, std::ref(instance), (int)coreMutexes.size() - 1));
+				}
+			}
 		}
 	}
 

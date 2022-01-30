@@ -20,6 +20,8 @@ namespace GameEmu::Common
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT int addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties = {});
 	public:
+		bool paused;
+
 		enum class ReturnStatus
 		{
 			Success,
@@ -53,5 +55,10 @@ namespace GameEmu::Common
 		 Is called when the System initially starts running, from the System core thread.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus SystemInit();
+
+		/*
+		 Returns whether or not the RunLoop should create a new thread for each Core instance loaded in this Core. (Only applies to System Cores)
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual bool isMultithreaded();
 	};
 }

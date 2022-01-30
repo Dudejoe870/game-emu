@@ -8,10 +8,6 @@ if(NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR ${CMAKE_SYSTEM_NAME} STREQUAL
 	message(FATAL_ERROR "Unsupported Platform")
 endif()
 
-if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
-endif()
-
 set(ARGS_BUILD_EXAMPLE OFF)
 set(ARGS_BUILD_UNITTESTS OFF)
 

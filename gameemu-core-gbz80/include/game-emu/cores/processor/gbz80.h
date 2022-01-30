@@ -24,6 +24,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 		Core(Common::CoreLoader* loader);
 		
 		std::string getName();
+		std::string getDescription();
 		Common::Core::Type getType();
 		std::unique_ptr<Common::CoreInstance> createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties = {});
 	};

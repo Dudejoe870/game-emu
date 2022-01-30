@@ -22,6 +22,11 @@ namespace GameEmu::Cores::Processor::GBZ80
 		return "gameemu-core-gbz80";
 	}
 
+	std::string Core::getDescription()
+	{
+		return "A Core emulating a Gameboy's Z80 microprocessor.";
+	}
+
 	Common::Core::Type Core::getType()
 	{
 		return Common::Core::Type::Processor;

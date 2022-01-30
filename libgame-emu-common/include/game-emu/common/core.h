@@ -51,7 +51,7 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string getName();
 
 		/*
-		 Returns a short description of the Core. (Only relevant to System Cores)
+		 Returns a short description of the Core.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string getDescription();
 

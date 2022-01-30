@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 #define GAMEEMU_INTERFACE_EXPORT __declspec(dllexport)
-#elif
+#else
 #define GAMEEMU_INTERFACE_EXPORT __attribute__((visibility("default")))
 #endif
 
@@ -10,7 +10,7 @@
 
 #ifdef _WIN32
 #define LIBGAMEEMU_COMMON_DLL_EXPORT __declspec(dllexport)
-#elif
+#else
 #define LIBGAMEEMU_COMMON_DLL_EXPORT __attribute__((visibility("default")))
 #endif
 
@@ -18,7 +18,7 @@
 
 #ifdef _WIN32
 #define LIBGAMEEMU_COMMON_DLL_EXPORT __declspec(dllimport)
-#elif
+#else
 #define LIBGAMEEMU_COMMON_DLL_EXPORT
 #endif
 

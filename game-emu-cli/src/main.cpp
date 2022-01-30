@@ -1,4 +1,22 @@
-#include <iostream>
+/*
+ game-emu-cli: A CLI tool for using and debugging game-emu cores built off the libgame-emu-common library.
+
+	Copyright 2022 John Henry Clemis
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+	files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use,
+	copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to
+	whom the Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all copies or substantial
+	portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+	TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+	DEALINGS IN THE SOFTWARE.
+*/
 
 #include <game-emu/common/stdcommon.h>
 #include <game-emu/common/propertyvalue.h>
@@ -29,12 +47,14 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 	args::Flag pauseOnStart(parser, "pause-on-start", "Pauses the system core as soon as it starts.", { 'p', "pause-on-start" });
 
+	args::Group propertiesGroup(parser, "Properties");
+
 	// A List of all the properties associated with pointers to CLI flag objects.
 	std::unordered_map<std::string, std::unique_ptr<args::ValueFlag<std::string>>> propertyFlags;
 	for (const auto& kv : tempInstance->properties)
 	{
 		propertyFlags[kv.first] = std::make_unique<args::ValueFlag<std::string>>(
-			parser, 
+			propertiesGroup,
 			kv.first, 
 			"(" + Common::Util::getPropertyValueTypeDisplayName(Common::Util::getPropertyValueType(kv.second)) + ")",
 			args::Matcher { kv.first });
@@ -52,7 +72,8 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 			Common::Util::PropertyValueType type = Common::Util::getPropertyValueType(value);
 			if (*flag.get())
 			{
-				try {
+				try 
+				{
 					std::string lowerCaseFlag = flag->Get();
 					std::transform(lowerCaseFlag.begin(), lowerCaseFlag.end(), lowerCaseFlag.begin(),
 						[](unsigned char c) { return std::tolower(c); }); // This will break with UTF encoding.
@@ -92,7 +113,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				catch (const std::invalid_argument&)
 				{
 					std::cerr << "Couldn't parse flag " << kv.first << "." << std::endl;
-					break;
+					return;
 				}
 			}
 			else propertyOverrides.erase(kv.first);
@@ -122,20 +143,44 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 		auto rootMenu = std::make_unique<cli::Menu>(core->getName());
 
+		rootMenu->Insert("resume",
+			[&](std::ostream& o)
+			{
+				o << "Resuming " << core->getName() << "..." << std::endl;
+				loop.Resume();
+			}, "Starts the core.");
+		rootMenu->Insert("pause",
+			[&](std::ostream& o)
+			{
+				o << "Pausing " << core->getName() << "..." << std::endl;
+				loop.Pause();
+			}, "Pauses the core.");
+		rootMenu->Insert("status",
+			[&](std::ostream& o)
+			{
+				std::string status = "stopped";
+				if (loop.isPaused()) status = "paused";
+				else if (loop.isRunning()) status = "running";
+				o << status << std::endl;
+			}, "Gets the status of the core.");
+
 		std::unordered_map<Common::Core*, int> duplicateCounts;
 		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
 		{
-			auto coreMenu = std::make_unique<cli::Menu>(instance->getCore()->getName() + "-" + std::to_string(duplicateCounts[instance->getCore()]++));
+			std::string coreName = instance->getCore()->getName();
+			if (duplicateCounts[instance->getCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[instance->getCore()]);
+
+			auto coreMenu = std::make_unique<cli::Menu>(coreName);
 
 			coreMenu->Insert("info",
 				[&](std::ostream& o) 
 				{
 					o << "Name: " << instance->getCore()->getName() << std::endl;
+					o << "Description: " << instance->getCore()->getDescription() << std::endl;
 					o << "Dependencies:" << std::endl;
 					if (instance->getCore()->getDependencies().empty()) o << " None" << std::endl;
 					for (Common::Core* core : instance->getCore()->getDependencies())
 						o << " " << core->getName() << std::endl;
-
 				}, "Display general info about this core.");
 
 			rootMenu->Insert(std::move(coreMenu));

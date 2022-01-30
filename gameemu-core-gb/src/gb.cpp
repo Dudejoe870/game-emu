@@ -12,7 +12,6 @@ namespace GameEmu::Cores::System::GB
 
 	Common::CoreInstance::ReturnStatus Instance::Step()
 	{
-		this->instances[z80]->Step();
 		return ReturnStatus::Success;
 	}
 

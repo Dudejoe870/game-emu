@@ -9,6 +9,7 @@ namespace GameEmu::Common
 		const std::unordered_map<std::string, PropertyValue>& properties)
 	{
 		this->core = core;
+		this->paused = false;
 
 		this->properties = defaultProperties;
 
@@ -29,5 +30,10 @@ namespace GameEmu::Common
 	CoreInstance::ReturnStatus CoreInstance::SystemInit()
 	{
 		return CoreInstance::ReturnStatus::Error;
+	}
+
+	bool CoreInstance::isMultithreaded()
+	{
+		return false;
 	}
 }

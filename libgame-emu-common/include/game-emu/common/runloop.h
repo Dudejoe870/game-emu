@@ -14,11 +14,14 @@ namespace GameEmu::Common
 	private:
 		std::mutex threadMutex;
 		std::thread runThread;
+		std::vector<std::thread> coreThreads;
+		std::vector<std::unique_ptr<std::mutex>> coreMutexes;
 
-		std::atomic_flag running = ATOMIC_FLAG_INIT;
-		std::atomic_flag paused = ATOMIC_FLAG_INIT;
+		std::atomic<bool> running;
+		std::atomic<bool> paused;
 
 		void Loop();
+		void LoopCore(const std::unique_ptr<CoreInstance>& instance, int mutexIndex);
 	public:
 		Core* currentSystem;
 		std::unique_ptr<CoreInstance> systemInstance;
@@ -41,7 +44,7 @@ namespace GameEmu::Common
 		*/
 		inline void Stop()
 		{
-			running.clear();
+			running = false;
 		}
 
 		/*
@@ -49,7 +52,7 @@ namespace GameEmu::Common
 		*/
 		inline void Pause()
 		{
-			paused.test_and_set();
+			paused = true;
 		}
 
 		/*
@@ -57,7 +60,7 @@ namespace GameEmu::Common
 		*/
 		inline void Resume()
 		{
-			paused.clear();
+			paused = false;
 		}
 
 		/*
@@ -65,7 +68,7 @@ namespace GameEmu::Common
 		*/
 		inline bool isPaused()
 		{
-			return paused.test();
+			return paused;
 		}
 
 		/*
@@ -73,7 +76,7 @@ namespace GameEmu::Common
 		*/
 		inline bool isRunning()
 		{
-			return running.test();
+			return running;
 		}
 
 		/*
@@ -83,6 +86,7 @@ namespace GameEmu::Common
 		inline void AcquireLock()
 		{
 			threadMutex.lock();
+			for (std::unique_ptr<std::mutex>& mutex : coreMutexes) mutex->lock();
 		}
 
 		/*
@@ -91,6 +95,7 @@ namespace GameEmu::Common
 		inline void Unlock()
 		{
 			threadMutex.unlock();
+			for (std::unique_ptr<std::mutex>& mutex : coreMutexes) mutex->unlock();
 		}
 	};
 }
