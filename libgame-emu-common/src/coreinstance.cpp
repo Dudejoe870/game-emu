@@ -4,32 +4,32 @@
 
 namespace GameEmu::Common
 {
-	CoreInstance::CoreInstance(Core* core, 
-		const std::unordered_map<std::string, PropertyValue>& defaultProperties, 
-		const std::unordered_map<std::string, PropertyValue>& properties)
+	CoreInstance::CoreInstance(Core* core, RunState& runState,
+		const std::unordered_map<std::string, PropertyValue>& properties) 
+		: runState(runState)
 	{
 		this->core = core;
 		this->paused = false;
 
-		this->properties = defaultProperties;
+		this->properties = core->getDefaultProperties();
 
 		this->properties.insert(properties.begin(), properties.end());
 	}
 
 	int CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
-		instances.push_back(core->createNewInstance(properties));
+		instances.push_back(core->createNewInstance(runState, properties));
 		return (int)instances.size() - 1;
 	}
 
 	CoreInstance::ReturnStatus CoreInstance::Step()
 	{
-		return CoreInstance::ReturnStatus::Error;
+		return ReturnStatus::Error;
 	}
 
 	CoreInstance::ReturnStatus CoreInstance::SystemInit()
 	{
-		return CoreInstance::ReturnStatus::Error;
+		return ReturnStatus::Error;
 	}
 
 	bool CoreInstance::isMultithreaded()

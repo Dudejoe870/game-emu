@@ -16,6 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <variant>
+#include <fmt/core.h>
 
 #include <game-emu/common/util.h>
 #include <game-emu/common/symbolhelper.h>

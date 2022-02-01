@@ -66,7 +66,7 @@ namespace GameEmu::Common
 				runThread.join();
 
 			if (systemInstance) delete systemInstance.release();
-			systemInstance = currentSystem->createNewInstance(properties);
+			systemInstance = currentSystem->createNewInstance(*this, properties);
 
 			running = true;
 			runThread = std::thread(&RunLoop::Loop, this);
@@ -85,5 +85,15 @@ namespace GameEmu::Common
 	{
 		if (core->getType() != Core::Type::System) return;
 		this->currentSystem = core;
+	}
+
+	bool RunLoop::isRunning()
+	{
+		return running;
+	}
+
+	bool RunLoop::isPaused()
+	{
+		return paused;
 	}
 }

@@ -4,7 +4,7 @@ project ("game-emu")
 
 set(CMAKE_CXX_STANDARD 20)
 
-if(NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin"))
+if(NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
 	message(FATAL_ERROR "Unsupported Platform")
 endif()
 
@@ -14,8 +14,10 @@ set(ARGS_BUILD_UNITTESTS OFF)
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 add_subdirectory ("args" EXCLUDE_FROM_ALL)
 add_subdirectory ("cli" EXCLUDE_FROM_ALL)
+add_subdirectory ("fmt" EXCLUDE_FROM_ALL)
 
 add_subdirectory ("libgame-emu-common")
+add_subdirectory ("game-emu-cli")
+
 add_subdirectory ("gameemu-core-gbz80")
 add_subdirectory ("gameemu-core-gb")
-add_subdirectory ("game-emu-cli")

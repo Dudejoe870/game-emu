@@ -7,3 +7,6 @@
 [submodule "cli"]
 	path = cli
 	url = https://github.com/daniele77/cli.git
+[submodule "fmt"]
+	path = fmt
+	url = https://github.com/fmtlib/fmt.git

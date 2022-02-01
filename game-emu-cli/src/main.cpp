@@ -26,6 +26,7 @@
 #include <game-emu/common/coreinstance.h>
 
 #include <game-emu/common/runloop.h>
+#include <game-emu/common/runstate.h>
 
 #include <args.hxx>
 
@@ -37,9 +38,10 @@ using namespace GameEmu;
 
 void ParseCore(const std::string& progName, Common::Core* core, std::vector<std::string>::const_iterator beginArgs, std::vector<std::string>::const_iterator endArgs)
 {
-	std::unique_ptr<Common::CoreInstance> tempInstance = core->createNewInstance();
+	std::unordered_map<std::string, Common::PropertyValue> defaultProperties = core->getDefaultProperties();
+
 	std::unordered_map<std::string, Common::PropertyValue> propertyOverrides;
-	propertyOverrides.insert(tempInstance->properties.begin(), tempInstance->properties.end());
+	propertyOverrides.insert(defaultProperties.begin(), defaultProperties.end());
 
 	args::ArgumentParser parser(core->getDescription());
 	parser.Prog(progName + " " + core->getName());
@@ -51,7 +53,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 	// A List of all the properties associated with pointers to CLI flag objects.
 	std::unordered_map<std::string, std::unique_ptr<args::ValueFlag<std::string>>> propertyFlags;
-	for (const auto& kv : tempInstance->properties)
+	for (const auto& kv : defaultProperties)
 	{
 		propertyFlags[kv.first] = std::make_unique<args::ValueFlag<std::string>>(
 			propertiesGroup,

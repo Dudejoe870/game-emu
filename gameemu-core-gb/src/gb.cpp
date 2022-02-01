@@ -2,8 +2,8 @@
 
 namespace GameEmu::Cores::System::GB
 {
-	Instance::Instance(Common::Core* core, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::CoreInstance(core, { { "romfile", "" } }, properties)
+	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties)
+		: Common::CoreInstance(core, runState, properties)
 	{
 		this->gbCore = (Core*)core;
 
@@ -41,13 +41,18 @@ namespace GameEmu::Cores::System::GB
 		return "A Gameboy emulation Core.";
 	}
 
+	std::unordered_map<std::string, Common::PropertyValue> Core::getDefaultProperties()
+	{
+		return { { "romfile", "" } };
+	}
+
 	Common::Core::Type Core::getType()
 	{
 		return Common::Core::Type::System;
 	}
 
-	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
 	{
-		return std::make_unique<Instance>(this, properties);
+		return std::make_unique<Instance>(this, runState, properties);
 	}
 }

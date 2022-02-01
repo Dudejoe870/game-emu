@@ -4,12 +4,14 @@
 
 #include <game-emu/common/propertyvalue.h>
 
+#include <game-emu/common/runstate.h>
+
 namespace GameEmu::Common
 {
 	class Core;
 	class CoreInstance;
 
-	class RunLoop
+	class RunLoop : public RunState
 	{
 	private:
 		std::mutex threadMutex;
@@ -66,18 +68,12 @@ namespace GameEmu::Common
 		/*
 		 Returns whether or not the current System Core is paused.
 		*/
-		inline bool isPaused()
-		{
-			return paused;
-		}
+		LIBGAMEEMU_COMMON_DLL_EXPORT bool isPaused();
 
 		/*
 		 Returns whether or not the current System Core is running.
 		*/
-		inline bool isRunning()
-		{
-			return running;
-		}
+		LIBGAMEEMU_COMMON_DLL_EXPORT bool isRunning();
 
 		/*
 		 This acquires the thread mutex basically stopping any Cores from running while the caller accesses any current Core states.

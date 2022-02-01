@@ -32,13 +32,18 @@ namespace GameEmu::Common
 		return "";
 	}
 
+	std::unordered_map<std::string, PropertyValue> Core::getDefaultProperties()
+	{
+		return { };
+	}
+
 	Core::Type Core::getType()
 	{
 		return Core::Type::Processor;
 	}
 
-	std::unique_ptr<CoreInstance> Core::createNewInstance(std::unordered_map<std::string, PropertyValue> properties)
+	std::unique_ptr<CoreInstance> Core::createNewInstance(RunState& runState, std::unordered_map<std::string, PropertyValue> properties)
 	{
-		return std::make_unique<CoreInstance>(this, std::unordered_map<std::string, PropertyValue> { }, properties);
+		return std::make_unique<CoreInstance>(this, runState, properties);
 	}
 }

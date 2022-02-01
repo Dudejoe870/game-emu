@@ -4,6 +4,8 @@
 
 #include <game-emu/common/propertyvalue.h>
 
+#include <game-emu/common/runstate.h>
+
 namespace GameEmu::Common
 {
 	class CoreLoader;
@@ -56,13 +58,18 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string getDescription();
 
 		/*
+		 Returns the default property values for this Core.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unordered_map<std::string, PropertyValue> getDefaultProperties();
+
+		/*
 		 Returns the Core type.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual Type getType();
 
 		/*
-		 Creates a new Core instance. The caller is responsible for freeing the newly created instance.
+		 Creates a new Core instance.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unique_ptr<CoreInstance> createNewInstance(std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unique_ptr<CoreInstance> createNewInstance(RunState& runState, std::unordered_map<std::string, PropertyValue> properties = {});
 	};
 }

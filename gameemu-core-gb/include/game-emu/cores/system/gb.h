@@ -21,7 +21,7 @@ namespace GameEmu::Cores::System::GB
 
 		int z80;
 	public:
-		Instance(Common::Core* core, const std::unordered_map<std::string, Common::PropertyValue>& properties);
+		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
 		ReturnStatus Step();
 		ReturnStatus SystemInit();
@@ -39,7 +39,8 @@ namespace GameEmu::Cores::System::GB
 		std::string getName();
 		Common::Core::Type getType();
 		std::string getDescription();
+		std::unordered_map<std::string, Common::PropertyValue> getDefaultProperties();
 
-		std::unique_ptr<Common::CoreInstance> createNewInstance(std::unordered_map<std::string, Common::PropertyValue> properties = {});
+		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
 	};
 }
