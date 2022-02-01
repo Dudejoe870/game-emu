@@ -16,6 +16,10 @@ namespace GameEmu::Common
 		this->properties.insert(properties.begin(), properties.end());
 	}
 
+	CoreInstance::~CoreInstance()
+	{
+	}
+
 	int CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
 		instances.push_back(core->createNewInstance(runState, properties));
@@ -25,6 +29,16 @@ namespace GameEmu::Common
 	CoreInstance::ReturnStatus CoreInstance::Step()
 	{
 		return ReturnStatus::Error;
+	}
+
+	std::string CoreInstance::Disassemble(const std::vector<unsigned char>& data)
+	{
+		return "";
+	}
+
+	bool CoreInstance::canDisassemble()
+	{
+		return false;
 	}
 
 	CoreInstance::ReturnStatus CoreInstance::SystemInit()

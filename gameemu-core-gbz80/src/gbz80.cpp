@@ -23,16 +23,6 @@ namespace GameEmu::Cores::Processor::GBZ80
 		return info;
 	}
 
-	CPU::ReturnStatus CPU::Step()
-	{
-		return ReturnStatus::Success;
-	}
-
-	Common::Cpu::InstructionDecoder* CPU::getInstructionDecoder()
-	{
-		return &decoder;
-	}
-
 	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties)
 		: Common::CoreInstance(core, runState, properties)
 	{
@@ -41,6 +31,16 @@ namespace GameEmu::Cores::Processor::GBZ80
 	Common::CoreInstance::ReturnStatus Instance::Step()
 	{
 		return ReturnStatus::Success;
+	}
+
+	std::string Instance::Disassemble(const std::vector<unsigned char>& data)
+	{
+		return "";
+	}
+
+	bool Instance::canDisassemble()
+	{
+		return true;
 	}
 
 	Core::Core(Common::CoreLoader* loader)

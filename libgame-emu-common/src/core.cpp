@@ -12,6 +12,10 @@ namespace GameEmu::Common
 		this->loader = loader;
 	}
 
+	Core::~Core()
+	{
+	}
+
 	int Core::addDependency(std::string coreName)
 	{
 		dependencies.push_back(loader->getLoadedCore(coreName));

@@ -48,10 +48,22 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT CoreInstance(Core* core, RunState& runState,
 			const std::unordered_map<std::string, PropertyValue>& properties);
 
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ~CoreInstance();
+
 		/*
 		 Steps the Cores logic.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus Step();
+
+		/*
+		 Returns a disassembled string with each instruction separated by a new line.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string Disassemble(const std::vector<unsigned char>& data);
+
+		/*
+		 Returns whether or not this Core can disassemble machine code.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual bool canDisassemble();
 
 		/*
 		 Only applies to System cores.

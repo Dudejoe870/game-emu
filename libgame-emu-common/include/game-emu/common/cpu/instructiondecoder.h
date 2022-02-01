@@ -12,6 +12,8 @@ namespace GameEmu::Common::Cpu
 		{
 			std::vector<unsigned long long> opcodes; // Could be just one value, or multiple, it's up the the implementation.
 			std::vector<unsigned long long> operands;
+
+			unsigned char instructionLength;
 		};
 
 		struct Instruction
@@ -21,7 +23,10 @@ namespace GameEmu::Common::Cpu
 			*/
 			std::string assemblyFormat;
 
-			Instruction(std::string assemblyFormat);
+			Instruction(std::string assemblyFormat)
+			{
+				this->assemblyFormat = assemblyFormat;
+			}
 		};
 
 		/*

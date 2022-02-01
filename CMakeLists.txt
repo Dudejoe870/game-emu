@@ -11,6 +11,12 @@ endif()
 set(ARGS_BUILD_EXAMPLE OFF)
 set(ARGS_BUILD_UNITTESTS OFF)
 
+if(MSVC)
+    add_compile_options("$<$<CONFIG:RELEASE>:/O2>")
+else()
+    add_compile_options("-Wall" "-Wextra" "$<$<CONFIG:RELEASE>:-O3>")
+endif()
+
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 add_subdirectory ("args" EXCLUDE_FROM_ALL)
 add_subdirectory ("cli" EXCLUDE_FROM_ALL)

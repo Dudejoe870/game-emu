@@ -6,6 +6,8 @@
 
 #include <game-emu/common/runstate.h>
 
+#include <game-emu/common/cpu/instructiondecoder.h>
+
 namespace GameEmu::Common
 {
 	class CoreLoader;
@@ -40,6 +42,8 @@ namespace GameEmu::Common
 		 Note: There is no guaranty of load order.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT Core(CoreLoader* loader);
+
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ~Core();
 
 		/*
 		 Loads all dependencies for other Cores.

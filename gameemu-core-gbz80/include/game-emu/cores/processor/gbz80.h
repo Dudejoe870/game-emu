@@ -9,7 +9,6 @@
 
 #include <game-emu/common/propertyvalue.h>
 
-#include <game-emu/common/cpu/cpu.h>
 #include <game-emu/common/cpu/instructiondecoder.h>
 #include <game-emu/common/cpu/instructionstream.h>
 
@@ -26,23 +25,17 @@ namespace GameEmu::Cores::Processor::GBZ80
 		DecodeInfo Decode(Common::Cpu::InstructionStream& stream);
 	};
 
-	class CPU : public Common::Cpu::CPU
+	class Instance : public Common::CoreInstance
 	{
 	private:
 		InstructionDecoder decoder;
 	public:
-		ReturnStatus Step();
-		Common::Cpu::InstructionDecoder* getInstructionDecoder();
-	};
-
-	class Instance : public Common::CoreInstance
-	{
-	private:
-		CPU cpuCore;
-	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
 		ReturnStatus Step();
+
+		std::string Disassemble(const std::vector<unsigned char>& data);
+		bool canDisassemble();
 	};
 
 	class Core : public Common::Core

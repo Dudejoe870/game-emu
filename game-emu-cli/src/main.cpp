@@ -238,19 +238,19 @@ int main(int argc, char** argv)
 		else if (showCores)
 		{
 			std::cout << "Cores: " << std::endl;
-			for (Common::Core* core : loadedCores)
+			for (Common::Core* loadedCore : loadedCores)
 			{
-				if (core->getType() == Common::Core::Type::System)
-					std::cout << " " << core->getName() << ": " << core->getDescription() << std::endl;
+				if (loadedCore->getType() == Common::Core::Type::System)
+					std::cout << " " << loadedCore->getName() << ": " << loadedCore->getDescription() << std::endl;
 			}
 		}
 		else if (showAllCores)
 		{
 			std::cout << "Cores: " << std::endl;
-			for (Common::Core* core : loadedCores)
+			for (Common::Core* loadedCore : loadedCores)
 			{
 				std::string coreType = "";
-				switch (core->getType())
+				switch (loadedCore->getType())
 				{
 				case Common::Core::Type::Processor:
 					coreType = "(Processor)";
@@ -262,8 +262,8 @@ int main(int argc, char** argv)
 					coreType = "(System)";
 					break;
 				}
-				std::cout << " " << core->getName() << 
-					((core->getType() == Common::Core::Type::System) ? ": " + core->getDescription() + " " : " ")
+				std::cout << " " << loadedCore->getName() <<
+					((loadedCore->getType() == Common::Core::Type::System) ? ": " + loadedCore->getDescription() + " " : " ")
 					<< coreType << std::endl;
 			}
 		}

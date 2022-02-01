@@ -17,6 +17,8 @@
 #include <chrono>
 #include <variant>
 #include <fmt/core.h>
+#include <bit>
 
 #include <game-emu/common/util.h>
+#include <game-emu/common/endianutils.h>
 #include <game-emu/common/symbolhelper.h>
