@@ -17,6 +17,10 @@ else()
     add_compile_options("-Wall" "-Wextra" "$<$<CONFIG:RELEASE>:-O3>")
 endif()
 
+set(LLVM_TARGETS_TO_BUILD "host")
+
+add_subdirectory ("llvm-project/llvm" EXCLUDE_FROM_ALL)
+
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 add_subdirectory ("args" EXCLUDE_FROM_ALL)
 add_subdirectory ("cli" EXCLUDE_FROM_ALL)
