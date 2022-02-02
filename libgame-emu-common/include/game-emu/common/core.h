@@ -6,7 +6,7 @@
 
 #include <game-emu/common/runstate.h>
 
-#include <game-emu/common/cpu/instructiondecoder.h>
+#include <game-emu/common/instructiondecoder.h>
 
 namespace GameEmu::Common
 {

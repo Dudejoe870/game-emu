@@ -3,29 +3,36 @@
 #include <game-emu/common/stdcommon.h>
 
 #include <game-emu/common/core.h>
-#include <game-emu/common/coreinstance.h>
+#include <game-emu/common/instructionbasedcoreinstance.h>
 #include <game-emu/common/coreloader.h>
 #include <game-emu/common/runstate.h>
 
 #include <game-emu/common/propertyvalue.h>
 
-#include <game-emu/common/cpu/instructiondecoder.h>
-#include <game-emu/common/cpu/instructionstream.h>
-
+#include <game-emu/common/instructiondecoder.h>
+#include <game-emu/common/instructionstream.h>
 
 namespace GameEmu::Cores::Processor::GBZ80
 {
-	class InstructionDecoder : public Common::Cpu::InstructionDecoder
+	class InstructionDecoder : public Common::InstructionDecoder
 	{
 	private:
-		std::vector<Instruction> instructions;
+		std::vector<Instruction> instructions = 
+		{
+			Instruction("nop", 1) // 0x00
+		};
+
+		std::vector<Instruction> CBInstructions =
+		{
+
+		};
 	public:
 		Instruction* getInstruction(const std::vector<unsigned long long>& opcodes);
 		std::string Disassemble(const DecodeInfo& info);
-		DecodeInfo Decode(Common::Cpu::InstructionStream& stream);
+		DecodeInfo Decode(Common::InstructionStream& stream);
 	};
 
-	class Instance : public Common::CoreInstance
+	class Instance : public Common::InstructionBasedCoreInstance
 	{
 	private:
 		InstructionDecoder decoder;
@@ -35,7 +42,6 @@ namespace GameEmu::Cores::Processor::GBZ80
 		ReturnStatus Step();
 
 		std::string Disassemble(const std::vector<unsigned char>& data);
-		bool canDisassemble();
 	};
 
 	class Core : public Common::Core

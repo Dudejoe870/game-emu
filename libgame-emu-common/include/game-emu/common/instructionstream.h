@@ -2,7 +2,7 @@
 
 #include <game-emu/common/stdcommon.h>
 
-namespace GameEmu::Common::Cpu
+namespace GameEmu::Common
 {
 	class InstructionStream
 	{

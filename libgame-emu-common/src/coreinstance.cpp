@@ -31,16 +31,6 @@ namespace GameEmu::Common
 		return ReturnStatus::Error;
 	}
 
-	std::string CoreInstance::Disassemble(const std::vector<unsigned char>& data)
-	{
-		return "";
-	}
-
-	bool CoreInstance::canDisassemble()
-	{
-		return false;
-	}
-
 	CoreInstance::ReturnStatus CoreInstance::SystemInit()
 	{
 		return ReturnStatus::Error;

@@ -24,9 +24,9 @@
 #include <game-emu/common/core.h>
 #include <game-emu/common/coreloader.h>
 #include <game-emu/common/coreinstance.h>
+#include <game-emu/common/instructionbasedcoreinstance.h>
 
 #include <game-emu/common/runloop.h>
-#include <game-emu/common/runstate.h>
 
 #include <args.hxx>
 
@@ -169,6 +169,8 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		std::unordered_map<Common::Core*, int> duplicateCounts;
 		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
 		{
+			Common::InstructionBasedCoreInstance* instructionBasedInstance = dynamic_cast<Common::InstructionBasedCoreInstance*>(instance.get());
+
 			std::string coreName = instance->getCore()->getName();
 			if (duplicateCounts[instance->getCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[instance->getCore()]);
 
@@ -179,6 +181,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				{
 					o << "Name: " << instance->getCore()->getName() << std::endl;
 					o << "Description: " << instance->getCore()->getDescription() << std::endl;
+					o << "Is Instruction Based: " << (instructionBasedInstance ? "Yes" : "No") << std::endl;
 					o << "Dependencies:" << std::endl;
 					if (instance->getCore()->getDependencies().empty()) o << " None" << std::endl;
 					for (Common::Core* core : instance->getCore()->getDependencies())

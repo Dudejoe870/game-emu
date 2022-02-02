@@ -1,9 +1,9 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
-#include <game-emu/common/cpu/instructionstream.h>
+#include <game-emu/common/instructionstream.h>
 
-namespace GameEmu::Common::Cpu
+namespace GameEmu::Common
 {
 	class InstructionDecoder
 	{
@@ -13,7 +13,15 @@ namespace GameEmu::Common::Cpu
 			std::vector<unsigned long long> opcodes; // Could be just one value, or multiple, it's up the the implementation.
 			std::vector<unsigned long long> operands;
 
-			unsigned char instructionLength;
+			DecodeInfo()
+			{
+			}
+
+			DecodeInfo(const std::vector<unsigned long long>& opcodes, const std::vector<unsigned long long>& operands)
+			{
+				this->opcodes = opcodes;
+				this->operands = operands;
+			}
 		};
 
 		struct Instruction
@@ -23,9 +31,15 @@ namespace GameEmu::Common::Cpu
 			*/
 			std::string assemblyFormat;
 
-			Instruction(std::string assemblyFormat)
+			/*
+			 The length of this instruction in bytes.
+			*/
+			unsigned char length;
+
+			Instruction(std::string assemblyFormat, unsigned char length)
 			{
 				this->assemblyFormat = assemblyFormat;
+				this->length = length;
 			}
 		};
 
