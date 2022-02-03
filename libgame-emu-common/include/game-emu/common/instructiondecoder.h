@@ -8,22 +8,6 @@ namespace GameEmu::Common
 	class InstructionDecoder
 	{
 	public:
-		struct DecodeInfo
-		{
-			std::vector<unsigned long long> opcodes; // Could be just one value, or multiple, it's up the the implementation.
-			std::vector<unsigned long long> operands;
-
-			DecodeInfo()
-			{
-			}
-
-			DecodeInfo(const std::vector<unsigned long long>& opcodes, const std::vector<unsigned long long>& operands)
-			{
-				this->opcodes = opcodes;
-				this->operands = operands;
-			}
-		};
-
 		struct Instruction
 		{
 			/*
@@ -40,6 +24,25 @@ namespace GameEmu::Common
 			{
 				this->assemblyFormat = assemblyFormat;
 				this->length = length;
+			}
+		};
+
+		struct DecodeInfo
+		{
+			std::vector<unsigned long long> opcodes; // Could be just one value, or multiple, it's up the the implementation.
+			std::vector<unsigned long long> operands;
+			Instruction* instruction;
+
+			DecodeInfo()
+			{
+				this->instruction = nullptr;
+			}
+
+			DecodeInfo(const std::vector<unsigned long long>& opcodes, const std::vector<unsigned long long>& operands, Instruction* instruction)
+			{
+				this->opcodes = opcodes;
+				this->operands = operands;
+				this->instruction = instruction;
 			}
 		};
 

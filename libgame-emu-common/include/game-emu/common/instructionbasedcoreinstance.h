@@ -13,7 +13,11 @@ namespace GameEmu::Common
 	private:
 		InstructionDecoder& decoder;
 	protected:
-		template <class T, std::endian endian>
+		/*
+		 General Disassembly Implementation.
+		 Note: It's recommended to set stopUnknownInst if the emulated ISA has variable length instructions.
+		*/
+		template <class T, std::endian endian, bool stopUnknownInst = false, unsigned int defaultInstructionSize = 1>
 		inline std::string DisassembleImpl(const std::vector<unsigned char>& data)
 		{
 			std::string result = "";
@@ -23,11 +27,15 @@ namespace GameEmu::Common
 			{
 				Common::VectorInstructionStream<T, endian> instructionStream(data, currentOffset);
 				InstructionDecoder::DecodeInfo decodeInfo = decoder.Decode(instructionStream);
-				InstructionDecoder::Instruction* instruction = decoder.getInstruction(decodeInfo.operands);
 
 				result += decoder.Disassemble(decodeInfo) + '\n';
 
-				currentOffset += instruction->length;
+				if constexpr (stopUnknownInst)
+				{
+					if (!decodeInfo.instruction) break;
+					currentOffset += decodeInfo.instruction->length;
+				}
+				else currentOffset += (decodeInfo.instruction) ? decodeInfo.instruction->length : defaultInstructionSize;
 			}
 
 			return result;

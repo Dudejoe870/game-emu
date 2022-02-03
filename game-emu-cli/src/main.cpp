@@ -166,6 +166,25 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				o << status << std::endl;
 			}, "Gets the status of the core.");
 
+		Common::CoreState* systemCoreState = loop.systemInstance->getCoreState();
+		if (systemCoreState)
+		{
+			rootMenu->Insert("state",
+				[&](std::ostream& o)
+				{
+					loop.AcquireLock();
+
+					for (auto& kv : systemCoreState->getRegisters())
+					{
+						if (kv.second.isFloatingPoint())
+							o << kv.first << ": " << kv.second.getValue<double>() << std::endl;
+						else o << kv.first << ": " << kv.second.getValue<unsigned long long>() << std::endl;
+					}
+
+					loop.Unlock();
+				}, "Display the core state registers.");
+		}
+
 		std::unordered_map<Common::Core*, int> duplicateCounts;
 		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
 		{
@@ -187,6 +206,25 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					for (Common::Core* core : instance->getCore()->getDependencies())
 						o << " " << core->getName() << std::endl;
 				}, "Display general info about this core.");
+
+			Common::CoreState* coreState = instance->getCoreState();
+			if (coreState)
+			{
+				coreMenu->Insert("state",
+					[&](std::ostream& o)
+					{
+						loop.AcquireLock();
+
+						for (auto& kv : coreState->getRegisters())
+						{
+							if (kv.second.isFloatingPoint())
+								o << kv.first << ": " << kv.second.getValue<double>() << std::endl;
+							else o << kv.first << ": " << kv.second.getValue<unsigned long long>() << std::endl;
+						}
+
+						loop.Unlock();
+					}, "Display Core State Registers.");
+			}
 
 			rootMenu->Insert(std::move(coreMenu));
 		}

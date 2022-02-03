@@ -40,4 +40,9 @@ namespace GameEmu::Common
 	{
 		return false;
 	}
+
+	CoreState* CoreInstance::getCoreState()
+	{
+		return nullptr;
+	}
 }

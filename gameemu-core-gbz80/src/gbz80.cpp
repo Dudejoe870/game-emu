@@ -45,15 +45,16 @@ namespace GameEmu::Cores::Processor::GBZ80
 			if (!stream.getNext(secondOpcode)) return DecodeInfo();
 			info.opcodes.push_back(secondOpcode);
 		}
-		else // CB Opcodes don't have operands
-		{
-			unsigned long long firstOperandByte = 0;
-			stream.getNext(firstOperandByte);
-			unsigned long long secondOperandByte = 0;
-			stream.getNext(secondOperandByte);
 
-			info.operands.push_back(firstOperandByte);
-			info.operands.push_back(secondOperandByte);
+		info.instruction = getInstruction(info.opcodes);
+		if (!info.instruction) return DecodeInfo();
+
+		unsigned int operands = info.instruction->length - info.opcodes.size();
+		for (unsigned int i = 0; i < operands; ++i)
+		{
+			unsigned long long operand = 0;
+			if (!stream.getNext(operand)) return DecodeInfo();
+			info.operands.push_back(operand);
 		}
 
 		return info;
@@ -71,7 +72,12 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 	std::string Instance::Disassemble(const std::vector<unsigned char>& data)
 	{
-		return DisassembleImpl<unsigned char, std::endian::little>(data);
+		return DisassembleImpl<unsigned char, std::endian::little, true>(data);
+	}
+
+	Common::CoreState* Instance::getCoreState()
+	{
+		return &state;
 	}
 
 	Core::Core(Common::CoreLoader* loader)

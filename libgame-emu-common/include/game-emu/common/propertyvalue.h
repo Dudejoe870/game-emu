@@ -6,7 +6,7 @@
 
 namespace GameEmu::Common
 {
-	typedef std::variant<int, long long, char, short, float, double, bool, std::string> PropertyValue;
+	using PropertyValue = std::variant<int, long long, char, short, float, double, bool, std::string>;
 	namespace Util
 	{
 		enum class PropertyValueType

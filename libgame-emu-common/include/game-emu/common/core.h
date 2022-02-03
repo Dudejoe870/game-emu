@@ -29,7 +29,7 @@ namespace GameEmu::Common
 		{
 			Processor, // A Processor of any kind of data, like a CPU.
 			GraphicsRasterizer, // A Graphics Rasterizer can step just like a regular processor, but also has access to rendering with the host GPU.
-			System // A System loads other cores together and invokes them.
+			System // A System loads other cores together and glues them together as a full system.
 		};
 
 		inline const std::vector<Core*>& getDependencies()

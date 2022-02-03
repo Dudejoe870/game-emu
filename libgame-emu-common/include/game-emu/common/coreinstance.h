@@ -6,6 +6,8 @@
 
 #include <game-emu/common/runstate.h>
 
+#include <game-emu/common/corestate.h>
+
 namespace GameEmu::Common
 {
 	class Core;
@@ -62,8 +64,14 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus SystemInit();
 
 		/*
-		 Returns whether or not the RunLoop should create a new thread for each Core instance loaded in this Core. (Only applies to System Cores)
+		 Only applies to System cores.
+		 Returns whether or not the RunLoop should create a new thread for each Core instance loaded in this Core.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual bool isMultithreaded();
+
+		/*
+		 Returns a pointer to this instances Core State.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreState* getCoreState();
 	};
 }

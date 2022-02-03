@@ -1,6 +1,6 @@
 #pragma once
 
-// The Windows header define min and max macros for some reason??? Really stupid choice as they collide with std::min and std::max.
+// The Windows headers define min and max macros for some reason??? Really stupid choice as they collide with std::min and std::max.
 #define NOMINMAX
 
 #include <cstdlib>
@@ -18,6 +18,7 @@
 #include <variant>
 #include <fmt/core.h>
 #include <bit>
+#include <functional>
 
 #include <game-emu/common/util.h>
 #include <game-emu/common/endianutils.h>
