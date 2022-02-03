@@ -9,8 +9,16 @@ namespace GameEmu::Common
 	public:
 		struct DebugRegisterInfo
 		{
+			std::string name;
 			std::variant<unsigned int*, unsigned long long*, unsigned char*, unsigned short*, float*, double*, bool*> pValue;
 			std::endian endian;
+
+			DebugRegisterInfo(std::string name, std::variant<unsigned int*, unsigned long long*, unsigned char*, unsigned short*, float*, double*, bool*> pValue, std::endian endian)
+			{
+				this->name = name;
+				this->pValue = pValue;
+				this->endian = endian;
+			}
 
 			inline bool isFloatingPoint()
 			{
@@ -39,9 +47,9 @@ namespace GameEmu::Common
 			}
 		};
 	private:
-		std::unordered_map<std::string, DebugRegisterInfo> debugRegisters;
+		std::vector<DebugRegisterInfo> debugRegisters;
 	public:
-		inline std::unordered_map<std::string, DebugRegisterInfo>& getRegisters()
+		inline std::vector<DebugRegisterInfo>& getRegisters()
 		{
 			return debugRegisters;
 		}

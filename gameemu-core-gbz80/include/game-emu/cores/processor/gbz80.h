@@ -81,6 +81,11 @@ namespace GameEmu::Cores::Processor::GBZ80
 					unsigned char H;
 				};
 			};
+
+			RegisterState()
+			{
+				std::memset(this, 0, sizeof(RegisterState));
+			}
 		};
 
 		RegisterState registerState;

@@ -174,11 +174,11 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				{
 					loop.AcquireLock();
 
-					for (auto& kv : systemCoreState->getRegisters())
+					for (Common::CoreState::DebugRegisterInfo& info : systemCoreState->getRegisters())
 					{
-						if (kv.second.isFloatingPoint())
-							o << kv.first << ": " << kv.second.getValue<double>() << std::endl;
-						else o << kv.first << ": " << kv.second.getValue<unsigned long long>() << std::endl;
+						if (info.isFloatingPoint())
+							o << info.name << ": " << info.getValue<double>() << std::endl;
+						else o << info.name << ": " << info.getValue<unsigned long long>() << std::endl;
 					}
 
 					loop.Unlock();
@@ -215,11 +215,11 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					{
 						loop.AcquireLock();
 
-						for (auto& kv : coreState->getRegisters())
+						for (Common::CoreState::DebugRegisterInfo& info : coreState->getRegisters())
 						{
-							if (kv.second.isFloatingPoint())
-								o << kv.first << ": " << kv.second.getValue<double>() << std::endl;
-							else o << kv.first << ": " << kv.second.getValue<unsigned long long>() << std::endl;
+							if (info.isFloatingPoint())
+								o << info.name << ": " << info.getValue<double>() << std::endl;
+							else o << info.name << ": " << info.getValue<unsigned long long>() << std::endl;
 						}
 
 						loop.Unlock();

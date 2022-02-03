@@ -30,8 +30,7 @@ namespace GameEmu::Common
 			this->writeEvent = writeEvent;
 			if (coreState)
 			{
-				coreState->debugRegisters[debugName].pValue = pReadValue;
-				coreState->debugRegisters[debugName].endian = endian;
+				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, pReadValue, endian));
 			}
 		}
 
@@ -44,8 +43,7 @@ namespace GameEmu::Common
 			if (coreState)
 			{
 				std::string debugName = "r" + coreState->debugRegisters.size();
-				coreState->debugRegisters[debugName].pValue = pReadValue;
-				coreState->debugRegisters[debugName].endian = endian;
+				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, pReadValue, endian));
 			}
 		}
 
