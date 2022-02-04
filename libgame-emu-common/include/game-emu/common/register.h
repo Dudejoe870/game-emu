@@ -80,13 +80,6 @@ namespace GameEmu::Common
 			*pWriteValue = Util::ToNativeEndian<endian>(value);
 		}
 
-		template <class U, std::endian e, bool ev>
-		Register& operator=(Register<U, e, ev>& reg)
-		{
-			Write<true>(static_cast<T>(reg.Read<true>()));
-			return *this;
-		}
-
 		template <class U>
 		Register& operator=(U value)
 		{
