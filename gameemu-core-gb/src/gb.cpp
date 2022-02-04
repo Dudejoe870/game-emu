@@ -28,12 +28,12 @@ namespace GameEmu::Cores::System::GB
 
 	void Core::LoadDependencies()
 	{
-		this->z80 = addDependency("gameemu-core-gbz80");
+		this->z80 = addDependency("gbz80");
 	}
 
 	std::string Core::getName()
 	{
-		return "gameemu-core-gb";
+		return "gb";
 	}
 
 	std::string Core::getDescription()

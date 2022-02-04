@@ -87,7 +87,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 	std::string Core::getName()
 	{
-		return "gameemu-core-gbz80";
+		return "gbz80";
 	}
 
 	std::string Core::getDescription()
