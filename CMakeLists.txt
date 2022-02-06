@@ -50,7 +50,7 @@ add_subdirectory ("args" EXCLUDE_FROM_ALL)
 add_subdirectory ("cli" EXCLUDE_FROM_ALL)
 add_subdirectory ("fmt" EXCLUDE_FROM_ALL)
 
-add_subdirectory ("libgame-emu-common")
+add_subdirectory ("game-emu-common")
 add_subdirectory ("game-emu-cli")
 
 add_subdirectory ("gameemu-core-gbz80")

@@ -8,7 +8,7 @@ A cross-platform multi-system emulator / library
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | game-emu-cli        | A CLI UI for loading, running, and debugging game-emu cores with a runtime debugging CLI.                                                                          |
 | gameemu-core-*      | A game-emu core that is linked as a dynamic library, then loaded at runtime, invoked using a common API.                                                           |
-| libgame-emu-common | The main folder of the project, this is the main library that all cores and UIs are built off of. Contains general utilities for making creating Emulators easier. |
+| game-emu-common     | The main folder of the project, this is the main library that all cores and UIs are built off of. Contains general utilities for making creating Emulators easier. |
 
 # Cores
 
