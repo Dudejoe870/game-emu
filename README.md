@@ -35,11 +35,6 @@ In Windows it's recommended to use Visual Studio 2022 with the CMake support ins
 
 Just open the cloned repository as an external project, 
 set your build configuration and go.
-> Note: After configuring for the first time, you may want to go up to
-Project > Configure Cache to configure for a 
-second time because sometimes some of the LLVM variables 
-don't correctly get applied the first time
-(Also do this if you delete the cache and do a complete reconfigure)
 
 ## Linux
 
