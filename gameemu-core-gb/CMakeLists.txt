@@ -8,3 +8,7 @@ add_custom_command(TARGET gameemu-core-gb POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:gameemu-core-gb> $<TARGET_FILE_DIR:game-emu-cli>/cores/$<TARGET_FILE_NAME:gameemu-core-gb>
 	VERBATIM
 )
+
+include(GNUInstallDirs)
+install(TARGETS gameemu-core-gb RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/cores LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}/cores)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

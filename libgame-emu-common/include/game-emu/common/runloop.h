@@ -6,24 +6,144 @@
 
 #include <game-emu/common/runstate.h>
 
+#include <game-emu/common/coreinstance.h>
+
 namespace GameEmu::Common
 {
 	class Core;
-	class CoreInstance;
 
 	class RunLoop : public RunState
 	{
 	private:
+		// Common Variables for both Single-Threading, and Multithreading.
 		std::mutex threadMutex;
 		std::thread runThread;
+
+		// Multithreading
 		std::vector<std::thread> coreThreads;
 		std::vector<std::unique_ptr<std::mutex>> coreMutexes;
 
+		// Synchronization for Multithreading, to insure that the System doesn't start until all the Cores have started, coming out of a pause.
+		std::atomic<bool> systemReady;
+		std::vector<std::unique_ptr<std::atomic<bool>>> coresReady;
+
+		// The running and paused variables.
 		std::atomic<bool> running;
 		std::atomic<bool> paused;
 
+		/*
+		 Wait at the end of a Core loop to pad the time 
+		 if the Core stepping was much faster than the real time it takes on hardware to step.
+		*/
+		inline void WaitForPeriod(std::chrono::nanoseconds period,
+			std::chrono::time_point<std::chrono::steady_clock> startTime,
+			std::chrono::time_point<std::chrono::steady_clock> endTime)
+		{
+			/*
+			 Why not use sleep_until?
+			 Because doing this "ugly" wait, will actually be more accurate as we won't give the OS time to do anything else.
+			 This does use more resources but is important for more accurate timing.
+			*/
+			auto endTimeNS = std::chrono::time_point_cast<std::chrono::nanoseconds>(endTime);
+			auto startTimeNS = std::chrono::time_point_cast<std::chrono::nanoseconds>(startTime);
+			while ((std::chrono::steady_clock::now() - endTime) < (period - (endTimeNS - startTimeNS))) continue;
+		}
+
+		/*
+		 The actual Runloop implementation, with two templated versions. One for multithreading with extra synchronization checks, 
+		 and one without that just forloops through all the cores, suitable for simpler systems.
+		*/
+		template <bool multithreaded = false>
+		void LoopImpl()
+		{
+			systemInstance->SystemInit();
+
+			while (running)
+			{
+				if (paused || systemInstance->paused)
+				{
+					if constexpr (multithreaded) systemReady = false;
+					std::this_thread::sleep_for(std::chrono::milliseconds(150));
+					continue;
+				}
+
+				if constexpr (multithreaded)
+				{
+					if (!systemReady)
+					{
+						bool allCoresReady = true;
+						for (std::unique_ptr<std::atomic<bool>>& coreReady : coresReady)
+						{
+							allCoresReady &= *coreReady;
+							if (!*coreReady) break;
+						}
+
+						if (!allCoresReady) continue;
+						else systemReady = true;
+					}
+				}
+
+				threadMutex.lock();
+				auto startTime = std::chrono::steady_clock::now();
+
+				if constexpr (!multithreaded)
+				{
+					for (unsigned int i = 0; i < systemInstance->getInstances().size(); ++i)
+					{
+						const std::unique_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
+						if (!instance->paused)
+						{
+							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep) instance->Step();
+							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instance->getStepPeriod();
+						}
+					}
+				}
+
+				threadMutex.unlock();
+				auto endTime = std::chrono::steady_clock::now();
+
+				WaitForPeriod(stepPeriod, startTime, endTime);
+			}
+		}
+
+		/*
+		 The Loop implementation for Multithreading (just calls LoopImpl)
+		*/
+		void LoopMultithreaded();
+
+		/*
+		 The Loop implementation for Single-Threading (just calls LoopImpl)
+		*/
 		void Loop();
-		void LoopCore(const std::unique_ptr<CoreInstance>& instance, int mutexIndex);
+
+		/*
+		 The Loop implementation for individual Cores when Multithreading.
+		*/
+		void LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, int coreIndex);
+
+		/*
+		 The current System stepPeriod for Single-Threading (equals the smallest step for any of the cores).
+		*/
+		std::chrono::nanoseconds stepPeriod;
+
+		/*
+		 Timing info for each Core, stores when the next step for that core is.
+		*/
+		struct InstanceTimingInfo
+		{
+			std::chrono::time_point<std::chrono::steady_clock> nextStep;
+
+			InstanceTimingInfo()
+			{
+				nextStep = std::chrono::steady_clock::now();
+			}
+
+			InstanceTimingInfo(std::chrono::time_point<std::chrono::steady_clock> nextStep)
+			{
+				this->nextStep = nextStep;
+			}
+		};
+		std::vector<InstanceTimingInfo> timingInfo;
 	public:
 		Core* currentSystem;
 		std::unique_ptr<CoreInstance> systemInstance;

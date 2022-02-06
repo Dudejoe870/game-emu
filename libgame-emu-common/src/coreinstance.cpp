@@ -45,4 +45,9 @@ namespace GameEmu::Common
 	{
 		return nullptr;
 	}
+
+	std::chrono::nanoseconds CoreInstance::getStepPeriod()
+	{
+		return std::chrono::nanoseconds::zero();
+	}
 }

@@ -11,6 +11,11 @@ namespace GameEmu::Common
 		struct Instruction
 		{
 			/*
+			 Whether or not this instruction is valid.
+			*/
+			bool set;
+
+			/*
 			 A format string representing this instruction in assembly language.
 			*/
 			std::string assemblyFormat;
@@ -20,10 +25,16 @@ namespace GameEmu::Common
 			*/
 			unsigned char length;
 
+			Instruction()
+			{
+				this->set = false;
+			}
+
 			Instruction(std::string assemblyFormat, unsigned char length)
 			{
 				this->assemblyFormat = assemblyFormat;
 				this->length = length;
+				this->set = true;
 			}
 		};
 
@@ -48,6 +59,7 @@ namespace GameEmu::Common
 
 		/*
 		 Given the opcode(s), get a pointer to the instruction information (probably stored in a list that is indexed by the opcodes in some way)
+		 Should return nullptr if the instruction is invalid (doesn't exist or the "set" boolean is false)
 		*/
 		virtual Instruction* getInstruction(const std::vector<unsigned long long>& opcodes) = 0;
 

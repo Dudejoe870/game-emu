@@ -9,6 +9,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 		unsigned long long opcode = opcodes[0];
 		Instruction* instructionTable = instructions.data();
 
+		// If the opcode is prefixed with 0xCB, switch to the 0xCB Instruction table.
 		if (opcodes.size() > 1 && opcodes[0] == 0xCB)
 		{
 			if (opcodes[1] >= CBInstructions.size()) return nullptr;
@@ -17,14 +18,15 @@ namespace GameEmu::Cores::Processor::GBZ80
 		}
 		else if (opcodes[0] >= instructions.size()) return nullptr;
 
-		return &instructionTable[opcode];
+		Instruction* inst = &instructionTable[opcode];
+		if (!inst->set) return nullptr;
+		return inst;
 	}
 
 	std::string InstructionDecoder::Disassemble(const DecodeInfo& info)
 	{
-		Instruction* instruction = getInstruction(info.opcodes);
-		if (!instruction) return "invalid instruction";
-		return fmt::format(fmt::runtime(instruction->assemblyFormat),
+		if (!info.instruction) return "invalid instruction";
+		return fmt::format(fmt::runtime(info.instruction->assemblyFormat),
 			fmt::arg("d8", (info.operands.size() > 0) ? info.operands[0] : 0ull),
 			fmt::arg("d16", (info.operands.size() > 1) ? 
 				Common::Util::ToNativeEndian<std::endian::little>(
@@ -49,7 +51,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 		info.instruction = getInstruction(info.opcodes);
 		if (!info.instruction) return DecodeInfo();
 
-		unsigned int operands = info.instruction->length - info.opcodes.size();
+		unsigned int operands = info.instruction->length - (unsigned int)info.opcodes.size();
 		for (unsigned int i = 0; i < operands; ++i)
 		{
 			unsigned long long operand = 0;
@@ -78,6 +80,11 @@ namespace GameEmu::Cores::Processor::GBZ80
 	Common::CoreState* Instance::getCoreState()
 	{
 		return &state;
+	}
+
+	std::chrono::nanoseconds Instance::getStepPeriod()
+	{
+		return std::chrono::nanoseconds(952); // 1.05 MHz
 	}
 
 	Core::Core(Common::CoreLoader* loader)

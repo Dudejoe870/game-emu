@@ -10,11 +10,6 @@ namespace GameEmu::Cores::System::GB
 		this->z80 = addInstance(this->gbCore->getDependencies()[this->gbCore->z80]);
 	}
 
-	Common::CoreInstance::ReturnStatus Instance::Step()
-	{
-		return ReturnStatus::Success;
-	}
-
 	Common::CoreInstance::ReturnStatus Instance::SystemInit()
 	{
 		return ReturnStatus::Success;

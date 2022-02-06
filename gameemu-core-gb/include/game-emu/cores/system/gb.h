@@ -23,7 +23,6 @@ namespace GameEmu::Cores::System::GB
 	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
-		ReturnStatus Step();
 		ReturnStatus SystemInit();
 	};
 

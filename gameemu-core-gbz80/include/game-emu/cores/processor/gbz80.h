@@ -106,7 +106,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 		Common::Register<unsigned char, std::endian::native, false> H;
 		Common::Register<unsigned char, std::endian::native, false> L;
-	public:
+
 		State()
 			: AF(this, registerState.AF, registerState.AF, "AF"),
 			  BC(this, registerState.BC, registerState.BC, "BC"),
@@ -137,6 +137,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 		std::string Disassemble(const std::vector<unsigned char>& data);
 		Common::CoreState* getCoreState();
+		std::chrono::nanoseconds getStepPeriod();
 	};
 
 	class Core : public Common::Core

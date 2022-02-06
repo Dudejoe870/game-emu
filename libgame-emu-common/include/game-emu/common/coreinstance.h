@@ -59,7 +59,7 @@ namespace GameEmu::Common
 
 		/*
 		 Only applies to System cores.
-		 Is called when the System initially starts running, from the System core thread.
+		 Is called when the System initially starts running.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus SystemInit();
 
@@ -73,5 +73,10 @@ namespace GameEmu::Common
 		 Returns a pointer to this instances Core State.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreState* getCoreState();
+		
+		/*
+		 Returns this Core Instance's stepping period.
+		*/
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::chrono::nanoseconds getStepPeriod();
 	};
 }
