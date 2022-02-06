@@ -247,7 +247,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 int main(int argc, char** argv)
 {
-	Common::CoreLoader coreLoader("cores");
+	Common::CoreLoader coreLoader("game-emu-cores");
 
 	const std::vector<Common::Core*>& loadedCores = coreLoader.getLoadedCores();
 

@@ -5,5 +5,5 @@ target_include_directories (gameemu-core-gb PUBLIC "include")
 target_link_libraries (gameemu-core-gb PRIVATE game-emu-common gameemu-core-gbz80)
 
 include(GNUInstallDirs)
-install(TARGETS gameemu-core-gb RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/cores LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}/cores)
+install(TARGETS gameemu-core-gb RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/game-emu-cores LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}/game-emu-cores)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
