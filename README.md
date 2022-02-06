@@ -34,7 +34,11 @@ other than CMake and a general building environment
 In Windows it's recommended to use Visual Studio 2022 with the CMake support installed.
 
 Just open the cloned repository as an external project, 
-set your build configuration and go.
+set your build configuration and build.
+
+From there to run it you can go to 
+Build > Install game-emu, that will put the executable in 
+out/install/bin with the required DLLs, you can run the EXE from there.
 
 ## Linux
 
@@ -50,8 +54,20 @@ Then go into out/build and type
 ```bash
 ninja
 ```
+to build the software.
 
-Simple as that, you now have built binaries.
+To run the software you can install it using
+```bash
+cmake --install . [--prefix (install prefix)]
+```
+
+You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local)
+
+Once it's in your path (will be by default if you didn't specify an install prefix)
+you can now use ```game-emu-cli``` to run the software.
+> Note: If you specified a custom install prefix, 
+your LD_LIBRARY_PATH variable will have to 
+include the lib subdirectory in the install path.
 
 # Contribution
 If you want to contribute, be my guest! I'd love to see what other people have to bring, 

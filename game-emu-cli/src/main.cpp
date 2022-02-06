@@ -1,5 +1,5 @@
 /*
- game-emu-cli: A CLI tool for using and debugging game-emu cores built off the libgame-emu-common library.
+ game-emu-cli: A CLI tool for using and debugging game-emu cores built off the game-emu-common library.
 
 	Copyright 2022 John Henry Clemis
 

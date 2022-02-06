@@ -67,7 +67,7 @@ namespace GameEmu::Common
 		{
 			if (!running && runThread.joinable())
 				runThread.join();
-			if (systemInstance->isMultithreaded())
+			if (systemInstance && systemInstance->isMultithreaded())
 			{
 				for (std::thread& thread : coreThreads)
 					if (!running && thread.joinable()) thread.join();
