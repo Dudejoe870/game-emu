@@ -2,6 +2,8 @@
 
 #include <game-emu/common/core.h>
 
+#include <game-emu/common/util.h>
+
 namespace GameEmu::Common
 {
 	CoreLoader::CoreLoader(std::filesystem::path coreSubdirectory)

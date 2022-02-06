@@ -6,9 +6,6 @@
 #elif defined(__linux__)
 #include <limits.h>
 #include <unistd.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#include <limits.h>
 #elif
 #error "Platform not supported!"
 #endif
@@ -25,23 +22,18 @@ namespace GameEmu::Common
 		char result[PATH_MAX];
 		ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
 		return std::string(result, (count > 0) ? count : 0);
-#elif defined(__APPLE__)
-		char result[PATH_MAX];
-		uint32_t count = PATH_MAX;
-		_NSGetExecutablePath(result, &count);
-		return std::string(result, (count > 0) ? count : 0);
 #endif
 	}
 
 	Util::PropertyValueType Util::getPropertyValueType(const PropertyValue& value)
 	{
-		if (std::holds_alternative<int>(value))
+		if (std::holds_alternative<s32>(value))
 			return PropertyValueType::Integer32;
-		else if (std::holds_alternative<long long>(value))
+		else if (std::holds_alternative<s64>(value))
 			return PropertyValueType::Integer64;
-		else if (std::holds_alternative<char>(value))
+		else if (std::holds_alternative<s8>(value))
 			return PropertyValueType::Integer8;
-		else if (std::holds_alternative<short>(value))
+		else if (std::holds_alternative<s16>(value))
 			return PropertyValueType::Integer16;
 		else if (std::holds_alternative<float>(value))
 			return PropertyValueType::Float;

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
-#include <filesystem>
-
+#include <game-emu/common/stdcommon.h>
 #include <game-emu/common/symbolhelper.h>
 
 namespace GameEmu::Common

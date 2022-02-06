@@ -78,22 +78,22 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				{
 					std::string lowerCaseFlag = flag->Get();
 					std::transform(lowerCaseFlag.begin(), lowerCaseFlag.end(), lowerCaseFlag.begin(),
-						[](unsigned char c) { return std::tolower(c); }); // This will break with UTF encoding.
+						[](u8 c) { return std::tolower(c); }); // This will break with UTF encoding.
 
 					// Parse each PropertyValue type to set the PropertyValue correctly.
 					switch (type)
 					{
 					case Common::Util::PropertyValueType::Integer32:
-						value = (int)std::stoi(flag->Get());
+						value = (s32)std::stoi(flag->Get());
 						break;
 					case Common::Util::PropertyValueType::Integer64:
-						value = (long long)std::stoll(flag->Get());
+						value = (s64)std::stoll(flag->Get());
 						break;
 					case Common::Util::PropertyValueType::Integer8:
-						value = (char)std::stoi(flag->Get());
+						value = (s8)std::stoi(flag->Get());
 						break;
 					case Common::Util::PropertyValueType::Integer16:
-						value = (short)std::stoi(flag->Get());
+						value = (s16)std::stoi(flag->Get());
 						break;
 					case Common::Util::PropertyValueType::Float:
 						value = (float)std::stof(flag->Get());
@@ -178,14 +178,14 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					{
 						if (info.isFloatingPoint())
 							o << info.name << ": " << info.getValue<double>() << std::endl;
-						else o << info.name << ": " << info.getValue<unsigned long long>() << std::endl;
+						else o << info.name << ": " << info.getValue<u64>() << std::endl;
 					}
 
 					loop.Unlock();
 				}, "Display the core state registers.");
 		}
 
-		std::unordered_map<Common::Core*, int> duplicateCounts;
+		std::unordered_map<Common::Core*, u32> duplicateCounts;
 		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
 		{
 			Common::InstructionBasedCoreInstance* instructionBasedInstance = dynamic_cast<Common::InstructionBasedCoreInstance*>(instance.get());
@@ -219,7 +219,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 						{
 							if (info.isFloatingPoint())
 								o << info.name << ": " << info.getValue<double>() << std::endl;
-							else o << info.name << ": " << info.getValue<unsigned long long>() << std::endl;
+							else o << info.name << ": " << info.getValue<u64>() << std::endl;
 						}
 
 						loop.Unlock();

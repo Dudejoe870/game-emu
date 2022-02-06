@@ -1,6 +1,7 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
+#include <game-emu/common/symbolhelper.h>
 
 #include <game-emu/common/coreinstance.h>
 
@@ -46,6 +47,6 @@ namespace GameEmu::Common
 		/*
 		 Returns a disassembled string with each instruction separated by a new line.
 		*/
-		virtual std::string Disassemble(const std::vector<unsigned char>& data) = 0;
+		virtual std::string Disassemble(const std::vector<u8>& data) = 0;
 	};
 }

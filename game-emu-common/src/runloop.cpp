@@ -27,7 +27,7 @@ namespace GameEmu::Common
 		LoopImpl<false>();
 	}
 
-	void RunLoop::LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, int coreIndex)
+	void RunLoop::LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, s32 coreIndex)
 	{
 		while (running)
 		{
@@ -85,7 +85,8 @@ namespace GameEmu::Common
 				{
 					coreMutexes.push_back(std::make_unique<std::mutex>());
 					coresReady.push_back(std::make_unique<std::atomic<bool>>(false));
-					coreThreads.push_back(std::thread(&RunLoop::LoopMultithreadedCore, this, std::ref(instance), (int)coreMutexes.size() - 1));
+					coreThreads.push_back(std::thread(&RunLoop::LoopMultithreadedCore, this, 
+						std::ref(instance), static_cast<s32>(coreMutexes.size()) - 1));
 				}
 
 				std::chrono::nanoseconds instancePeriod = instance->getStepPeriod();

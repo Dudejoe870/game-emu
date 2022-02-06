@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -20,6 +21,12 @@
 #include <bit>
 #include <functional>
 
-#include <game-emu/common/util.h>
-#include <game-emu/common/endianutils.h>
-#include <game-emu/common/symbolhelper.h>
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
+
+using s8 = std::int8_t;
+using s16 = std::int16_t;
+using s32 = std::int32_t;
+using s64 = std::int64_t;

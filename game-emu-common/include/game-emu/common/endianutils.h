@@ -1,7 +1,6 @@
 #pragma once
 
-#include <bit>
-#include <cstdlib>
+#include <game-emu/common/stdcommon.h>
 
 #ifdef __linux__
 #include <byteswap.h>
@@ -16,7 +15,7 @@ namespace GameEmu::Common
 	namespace Util
 	{
 		template <std::endian endian>
-		inline unsigned long long ToNativeEndian(unsigned long long value)
+		inline u64 ToNativeEndian(u64 value)
 		{
 			if constexpr (std::endian::native != endian)
 				return bswap_64(value);
@@ -25,7 +24,7 @@ namespace GameEmu::Common
 		}
 
 		template <std::endian endian>
-		inline unsigned int ToNativeEndian(unsigned int value)
+		inline u32 ToNativeEndian(u32 value)
 		{
 			if constexpr (std::endian::native != endian)
 				return bswap_32(value);
@@ -34,7 +33,7 @@ namespace GameEmu::Common
 		}
 
 		template <std::endian endian>
-		inline unsigned short ToNativeEndian(unsigned short value)
+		inline u16 ToNativeEndian(u16 value)
 		{
 			if constexpr (std::endian::native != endian)
 				return bswap_16(value);
@@ -45,8 +44,8 @@ namespace GameEmu::Common
 		template <std::endian endian>
 		inline float ToNativeEndian(float value)
 		{
-			static_assert(sizeof(float) == sizeof(unsigned int));
-			unsigned int iValue = *reinterpret_cast<unsigned int*>(&value);
+			static_assert(sizeof(float) == sizeof(u32));
+			u32 iValue = *reinterpret_cast<u32*>(&value);
 			iValue = ToNativeEndian<endian>(iValue);
 			return *reinterpret_cast<float*>(&iValue);
 		}
@@ -54,14 +53,14 @@ namespace GameEmu::Common
 		template <std::endian endian>
 		inline double ToNativeEndian(double value)
 		{
-			static_assert(sizeof(double) == sizeof(unsigned long long));
-			unsigned long long iValue = *reinterpret_cast<unsigned long long*>(&value);
+			static_assert(sizeof(double) == sizeof(u64));
+			u64 iValue = *reinterpret_cast<u64*>(&value);
 			iValue = ToNativeEndian<endian>(iValue);
 			return *reinterpret_cast<double*>(&iValue);
 		}
 
 		template <std::endian endian>
-		inline unsigned char ToNativeEndian(unsigned char value)
+		inline u8 ToNativeEndian(u8 value)
 		{
 			return value;
 		}
@@ -72,7 +71,7 @@ namespace GameEmu::Common
 			return value;
 		}
 
-		inline unsigned long long ToNativeEndian(unsigned long long value, std::endian endian)
+		inline u64 ToNativeEndian(u64 value, std::endian endian)
 		{
 			if (std::endian::native != endian)
 				return bswap_64(value);
@@ -80,7 +79,7 @@ namespace GameEmu::Common
 				return value;
 		}
 
-		inline unsigned int ToNativeEndian(unsigned int value, std::endian endian)
+		inline u32 ToNativeEndian(u32 value, std::endian endian)
 		{
 			if (std::endian::native != endian)
 				return bswap_32(value);
@@ -88,7 +87,7 @@ namespace GameEmu::Common
 				return value;
 		}
 
-		inline unsigned short ToNativeEndian(unsigned short value, std::endian endian)
+		inline u16 ToNativeEndian(u16 value, std::endian endian)
 		{
 			if (std::endian::native != endian)
 				return bswap_16(value);
@@ -98,21 +97,21 @@ namespace GameEmu::Common
 
 		inline float ToNativeEndian(float value, std::endian endian)
 		{
-			static_assert(sizeof(float) == sizeof(unsigned int));
-			unsigned int iValue = *reinterpret_cast<unsigned int*>(&value);
+			static_assert(sizeof(float) == sizeof(u32));
+			u32 iValue = *reinterpret_cast<u32*>(&value);
 			iValue = ToNativeEndian(iValue, endian);
 			return *reinterpret_cast<float*>(&iValue);
 		}
 
 		inline double ToNativeEndian(double value, std::endian endian)
 		{
-			static_assert(sizeof(double) == sizeof(unsigned long long));
-			unsigned long long iValue = *reinterpret_cast<unsigned long long*>(&value);
+			static_assert(sizeof(double) == sizeof(u64));
+			u64 iValue = *reinterpret_cast<u64*>(&value);
 			iValue = ToNativeEndian(iValue, endian);
 			return *reinterpret_cast<double*>(&iValue);
 		}
 
-		inline unsigned char ToNativeEndian(unsigned char value, std::endian endian)
+		inline u8 ToNativeEndian(u8 value, std::endian endian)
 		{
 			return value;
 		}

@@ -23,7 +23,7 @@ namespace GameEmu::Common
 			/*
 			 The length of this instruction in bytes.
 			*/
-			unsigned char length;
+			u8 length;
 
 			Instruction()
 			{
@@ -40,8 +40,8 @@ namespace GameEmu::Common
 
 		struct DecodeInfo
 		{
-			std::vector<unsigned long long> opcodes; // Could be just one value, or multiple, it's up the the implementation.
-			std::vector<unsigned long long> operands;
+			std::vector<u64> opcodes; // Could be just one value, or multiple, it's up the the implementation.
+			std::vector<u64> operands;
 			Instruction* instruction;
 
 			DecodeInfo()
@@ -49,7 +49,7 @@ namespace GameEmu::Common
 				this->instruction = nullptr;
 			}
 
-			DecodeInfo(const std::vector<unsigned long long>& opcodes, const std::vector<unsigned long long>& operands, Instruction* instruction)
+			DecodeInfo(const std::vector<u64>& opcodes, const std::vector<u64>& operands, Instruction* instruction)
 			{
 				this->opcodes = opcodes;
 				this->operands = operands;
@@ -61,7 +61,7 @@ namespace GameEmu::Common
 		 Given the opcode(s), get a pointer to the instruction information (probably stored in a list that is indexed by the opcodes in some way)
 		 Should return nullptr if the instruction is invalid (doesn't exist or the "set" boolean is false)
 		*/
-		virtual Instruction* getInstruction(const std::vector<unsigned long long>& opcodes) = 0;
+		virtual Instruction* getInstruction(const std::vector<u64>& opcodes) = 0;
 
 		/*
 		 Given a decoded instruction, using the instructions stored assembly format, return the formatted assembly instruction (for debugging purposes)

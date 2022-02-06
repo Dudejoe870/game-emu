@@ -20,10 +20,10 @@ namespace GameEmu::Common
 	{
 	}
 
-	int CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
+	s32 CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
 		instances.push_back(core->createNewInstance(runState, properties));
-		return (int)instances.size() - 1;
+		return static_cast<s32>(instances.size()) - 1;
 	}
 
 	CoreInstance::ReturnStatus CoreInstance::Step()

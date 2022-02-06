@@ -1,12 +1,11 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
-
 #include <game-emu/common/symbolhelper.h>
 
 namespace GameEmu::Common
 {
-	using PropertyValue = std::variant<int, long long, char, short, float, double, bool, std::string>;
+	using PropertyValue = std::variant<s32, s64, s8, s16, float, double, bool, std::string>;
 	namespace Util
 	{
 		enum class PropertyValueType

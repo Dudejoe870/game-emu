@@ -2,6 +2,8 @@
 
 #include <game-emu/common/stdcommon.h>
 
+#include <game-emu/common/endianutils.h>
+
 namespace GameEmu::Common
 {
 	class CoreState
@@ -10,10 +12,10 @@ namespace GameEmu::Common
 		struct DebugRegisterInfo
 		{
 			std::string name;
-			std::variant<unsigned int*, unsigned long long*, unsigned char*, unsigned short*, float*, double*, bool*> pValue;
+			std::variant<u32*, u64*, u8*, u16*, float*, double*, bool*> pValue;
 			std::endian endian;
 
-			DebugRegisterInfo(std::string name, std::variant<unsigned int*, unsigned long long*, unsigned char*, unsigned short*, float*, double*, bool*> pValue, std::endian endian)
+			DebugRegisterInfo(std::string name, std::variant<u32*, u64*, u8*, u16*, float*, double*, bool*> pValue, std::endian endian)
 			{
 				this->name = name;
 				this->pValue = pValue;
@@ -29,14 +31,14 @@ namespace GameEmu::Common
 			T getValue()
 			{
 				// I am sorry for my sins. (this is debug code anyway so please don't make fun of me) - JHC
-				if (std::holds_alternative<unsigned int*>(pValue))
-					return static_cast<T>(Util::ToNativeEndian(*std::get<unsigned int*>(pValue), endian));
-				else if (std::holds_alternative<unsigned long long*>(pValue))
-					return static_cast<T>(Util::ToNativeEndian(*std::get<unsigned long long*>(pValue), endian));
-				else if (std::holds_alternative<unsigned char*>(pValue))
-					return static_cast<T>(Util::ToNativeEndian(*std::get<unsigned char*>(pValue), endian));
-				else if (std::holds_alternative<unsigned short*>(pValue))
-					return static_cast<T>(Util::ToNativeEndian(*std::get<unsigned short*>(pValue), endian));
+				if (std::holds_alternative<u32*>(pValue))
+					return static_cast<T>(Util::ToNativeEndian(*std::get<u32*>(pValue), endian));
+				else if (std::holds_alternative<u64*>(pValue))
+					return static_cast<T>(Util::ToNativeEndian(*std::get<u64*>(pValue), endian));
+				else if (std::holds_alternative<u8*>(pValue))
+					return static_cast<T>(Util::ToNativeEndian(*std::get<u8*>(pValue), endian));
+				else if (std::holds_alternative<u16*>(pValue))
+					return static_cast<T>(Util::ToNativeEndian(*std::get<u16*>(pValue), endian));
 				else if (std::holds_alternative<float*>(pValue))
 					return static_cast<T>(Util::ToNativeEndian(*std::get<float*>(pValue), endian));
 				else if (std::holds_alternative<double*>(pValue))

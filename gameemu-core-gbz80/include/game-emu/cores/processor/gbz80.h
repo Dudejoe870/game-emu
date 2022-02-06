@@ -30,7 +30,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 		};
 	public:
-		Instruction* getInstruction(const std::vector<unsigned long long>& opcodes);
+		Instruction* getInstruction(const std::vector<u64>& opcodes);
 		std::string Disassemble(const DecodeInfo& info);
 		DecodeInfo Decode(Common::InstructionStream& stream);
 	};
@@ -44,41 +44,41 @@ namespace GameEmu::Cores::Processor::GBZ80
 			// so on most architectures there won't be any extra instructions for byteswapping.
 			union
 			{
-				unsigned short AF;
+				u16 AF;
 				struct
 				{
-					unsigned char F;
-					unsigned char A;
+					u8 F;
+					u8 A;
 				};
 			};
 
 			union
 			{
-				unsigned short BC;
+				u16 BC;
 				struct
 				{
-					unsigned char C;
-					unsigned char B;
+					u8 C;
+					u8 B;
 				};
 			};
 
 			union
 			{
-				unsigned short DE;
+				u16 DE;
 				struct
 				{
-					unsigned char E;
-					unsigned char D;
+					u8 E;
+					u8 D;
 				};
 			};
 
 			union
 			{
-				unsigned short HL;
+				u16 HL;
 				struct
 				{
-					unsigned char L;
-					unsigned char H;
+					u8 L;
+					u8 H;
 				};
 			};
 
@@ -90,22 +90,22 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 		RegisterState registerState;
 
-		Common::Register<unsigned short, std::endian::little, false> AF;
-		Common::Register<unsigned short, std::endian::little, false> BC;
-		Common::Register<unsigned short, std::endian::little, false> DE;
-		Common::Register<unsigned short, std::endian::little, false> HL;
+		Common::Register<u16, std::endian::little, false> AF;
+		Common::Register<u16, std::endian::little, false> BC;
+		Common::Register<u16, std::endian::little, false> DE;
+		Common::Register<u16, std::endian::little, false> HL;
 
-		Common::Register<unsigned char, std::endian::native, false> A;
-		Common::Register<unsigned char, std::endian::native, false> F;
+		Common::Register<u8, std::endian::native, false> A;
+		Common::Register<u8, std::endian::native, false> F;
 
-		Common::Register<unsigned char, std::endian::native, false> B;
-		Common::Register<unsigned char, std::endian::native, false> C;
+		Common::Register<u8, std::endian::native, false> B;
+		Common::Register<u8, std::endian::native, false> C;
 
-		Common::Register<unsigned char, std::endian::native, false> D;
-		Common::Register<unsigned char, std::endian::native, false> E;
+		Common::Register<u8, std::endian::native, false> D;
+		Common::Register<u8, std::endian::native, false> E;
 
-		Common::Register<unsigned char, std::endian::native, false> H;
-		Common::Register<unsigned char, std::endian::native, false> L;
+		Common::Register<u8, std::endian::native, false> H;
+		Common::Register<u8, std::endian::native, false> L;
 
 		State()
 			: AF(this, registerState.AF, registerState.AF, "AF"),
@@ -135,7 +135,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 		ReturnStatus Step();
 
-		std::string Disassemble(const std::vector<unsigned char>& data);
+		std::string Disassemble(const std::vector<u8>& data);
 		Common::CoreState* getCoreState();
 		std::chrono::nanoseconds getStepPeriod();
 	};

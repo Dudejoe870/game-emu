@@ -1,6 +1,7 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
+#include <game-emu/common/symbolhelper.h>
 
 #include <game-emu/common/propertyvalue.h>
 

@@ -19,7 +19,7 @@ namespace GameEmu::Cores::System::GB
 	private:
 		Core* gbCore;
 
-		int z80;
+		s32 z80;
 	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
@@ -29,7 +29,7 @@ namespace GameEmu::Cores::System::GB
 	class Core : public Common::Core
 	{
 	public:
-		int z80;
+		s32 z80;
 
 		Core(Common::CoreLoader* loader);
 

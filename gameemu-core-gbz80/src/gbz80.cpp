@@ -2,11 +2,11 @@
 
 namespace GameEmu::Cores::Processor::GBZ80
 {
-	InstructionDecoder::Instruction* InstructionDecoder::getInstruction(const std::vector<unsigned long long>& opcodes)
+	InstructionDecoder::Instruction* InstructionDecoder::getInstruction(const std::vector<u64>& opcodes)
 	{
 		if (opcodes.empty()) return nullptr;
 
-		unsigned long long opcode = opcodes[0];
+		u64 opcode = opcodes[0];
 		Instruction* instructionTable = instructions.data();
 
 		// If the opcode is prefixed with 0xCB, switch to the 0xCB Instruction table.
@@ -30,20 +30,20 @@ namespace GameEmu::Cores::Processor::GBZ80
 			fmt::arg("d8", (info.operands.size() > 0) ? info.operands[0] : 0ull),
 			fmt::arg("d16", (info.operands.size() > 1) ? 
 				Common::Util::ToNativeEndian<std::endian::little>(
-					*reinterpret_cast<const unsigned short*>(info.operands.data())) : 0ull)); // This optimization may seem a little over the top, but if you're disassembling a large chunk of code, this could add up.
+					*reinterpret_cast<const u16*>(info.operands.data())) : 0ull)); // This optimization may seem a little over the top, but if you're disassembling a large chunk of code, this could add up.
 	}
 
 	InstructionDecoder::DecodeInfo InstructionDecoder::Decode(Common::InstructionStream& stream)
 	{
 		DecodeInfo info;
 
-		unsigned long long firstOpcode = 0;
+		u64 firstOpcode = 0;
 		if (!stream.getNext(firstOpcode)) return DecodeInfo();
 		info.opcodes.push_back(firstOpcode);
 
 		if (firstOpcode == 0xCB) // CB Prefix
 		{
-			unsigned long long secondOpcode = 0;
+			u64 secondOpcode = 0;
 			if (!stream.getNext(secondOpcode)) return DecodeInfo();
 			info.opcodes.push_back(secondOpcode);
 		}
@@ -51,10 +51,10 @@ namespace GameEmu::Cores::Processor::GBZ80
 		info.instruction = getInstruction(info.opcodes);
 		if (!info.instruction) return DecodeInfo();
 
-		unsigned int operands = info.instruction->length - (unsigned int)info.opcodes.size();
-		for (unsigned int i = 0; i < operands; ++i)
+		u32 operands = info.instruction->length - (u32)info.opcodes.size();
+		for (u32 i = 0; i < operands; ++i)
 		{
-			unsigned long long operand = 0;
+			u64 operand = 0;
 			if (!stream.getNext(operand)) return DecodeInfo();
 			info.operands.push_back(operand);
 		}
@@ -72,9 +72,9 @@ namespace GameEmu::Cores::Processor::GBZ80
 		return ReturnStatus::Success;
 	}
 
-	std::string Instance::Disassemble(const std::vector<unsigned char>& data)
+	std::string Instance::Disassemble(const std::vector<u8>& data)
 	{
-		return DisassembleImpl<unsigned char, std::endian::little, true>(data);
+		return DisassembleImpl<u8, std::endian::little, true>(data);
 	}
 
 	Common::CoreState* Instance::getCoreState()

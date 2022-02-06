@@ -1,6 +1,7 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
+#include <game-emu/common/symbolhelper.h>
 
 #include <game-emu/common/propertyvalue.h>
 
@@ -88,7 +89,7 @@ namespace GameEmu::Common
 
 				if constexpr (!multithreaded)
 				{
-					for (unsigned int i = 0; i < systemInstance->getInstances().size(); ++i)
+					for (u32 i = 0; i < systemInstance->getInstances().size(); ++i)
 					{
 						const std::unique_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
 						if (!instance->paused)
@@ -119,7 +120,7 @@ namespace GameEmu::Common
 		/*
 		 The Loop implementation for individual Cores when Multithreading.
 		*/
-		void LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, int coreIndex);
+		void LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, s32 coreIndex);
 
 		/*
 		 The current System stepPeriod for Single-Threading (equals the smallest step for any of the cores).
