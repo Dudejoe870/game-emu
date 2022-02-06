@@ -61,13 +61,14 @@ To run the software you can install it using
 sudo cmake --install . [--prefix (install prefix)]
 ```
 
-You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local)
+You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local (make sure it's in your /etc/ld.so.conf!))
 
 Once it's in your path (will be by default if you didn't specify an install prefix)
 you can now use ```game-emu-cli``` to run the software.
 > Note: If you specified a custom install prefix, 
 your LD_LIBRARY_PATH variable will have to 
-include the lib subdirectory in the install path.
+include the lib subdirectory in the install path. 
+Or you can add it to your /etc/ld.so.conf config.
 
 # Contribution
 If you want to contribute, be my guest! I'd love to see what other people have to bring, 
