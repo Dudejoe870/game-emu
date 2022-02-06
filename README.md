@@ -58,7 +58,7 @@ to build the software.
 
 To run the software you can install it using
 ```bash
-cmake --install . [--prefix (install prefix)]
+sudo cmake --install . [--prefix (install prefix)]
 ```
 
 You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local)
