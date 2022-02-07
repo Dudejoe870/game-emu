@@ -70,6 +70,7 @@ to build the software.
 To run the software you can install it using
 ```bash
 sudo cmake --install . [--prefix (install prefix)]
+sudo ldconfig
 ```
 
 You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local (make sure it's in your /etc/ld.so.conf!))
