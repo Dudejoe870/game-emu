@@ -3,6 +3,9 @@
 #include <game-emu/common/stdcommon.h>
 #include <game-emu/common/instructionstream.h>
 
+#include <game-emu/common/coreinstance.h>
+#include <game-emu/common/corestate.h>
+
 namespace GameEmu::Common
 {
 	class InstructionDecoder
@@ -25,16 +28,20 @@ namespace GameEmu::Common
 			*/
 			u8 length;
 
+			using interpreterFunction = std::function<void(CoreState* state, const std::vector<u64>& operands)>;
+			interpreterFunction interpStep;
+
 			Instruction()
 			{
 				this->set = false;
 			}
 
-			Instruction(std::string assemblyFormat, unsigned char length)
+			Instruction(std::string assemblyFormat, unsigned char length, interpreterFunction interpStep)
 			{
 				this->assemblyFormat = assemblyFormat;
 				this->length = length;
 				this->set = true;
+				this->interpStep = interpStep;
 			}
 		};
 

@@ -17,22 +17,31 @@
 
 namespace GameEmu::Cores::Processor::GBZ80
 {
-	class InstructionDecoder : public Common::InstructionDecoder
+	class Core : public Common::Core
+	{
+	public:
+		Core(Common::CoreLoader* loader);
+
+		std::string getName();
+		std::string getDescription();
+		Common::Core::Type getType();
+		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
+	};
+
+	class Instance : public Common::InstructionBasedCoreInstance
 	{
 	private:
-		std::vector<Instruction> instructions = 
-		{
-			Instruction("nop", 1) // 0x00
-		};
+		InstructionDecoder decoder;
 
-		std::vector<Instruction> CBInstructions =
-		{
-
-		};
+		State state;
 	public:
-		Instruction* getInstruction(const std::vector<u64>& opcodes);
-		std::string Disassemble(const DecodeInfo& info);
-		DecodeInfo Decode(Common::InstructionStream& stream);
+		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
+
+		ReturnStatus Step();
+
+		std::string Disassemble(const std::vector<u8>& data);
+		Common::CoreState* getCoreState();
+		std::chrono::nanoseconds getStepPeriod();
 	};
 
 	class State : public Common::CoreState
@@ -82,6 +91,8 @@ namespace GameEmu::Cores::Processor::GBZ80
 				};
 			};
 
+			u16 PC;
+
 			RegisterState()
 			{
 				std::memset(this, 0, sizeof(RegisterState));
@@ -107,47 +118,47 @@ namespace GameEmu::Cores::Processor::GBZ80
 		Common::Register<u8, std::endian::native, false> H;
 		Common::Register<u8, std::endian::native, false> L;
 
+		Common::Register<u16, std::endian::native, false> PC;
+
 		State()
 			: AF(this, registerState.AF, registerState.AF, "AF", true, "{name}: 0x{u16:04x}"),
-			  BC(this, registerState.BC, registerState.BC, "BC", true, "{name}: 0x{u16:04x}"),
-			  DE(this, registerState.DE, registerState.DE, "DE", true, "{name}: 0x{u16:04x}"),
-			  HL(this, registerState.HL, registerState.HL, "HL", true, "{name}: 0x{u16:04x}"),
-			  A(this, registerState.A, registerState.A, "A", false),
-			  F(this, registerState.F, registerState.F, "F", false),
-			  B(this, registerState.B, registerState.B, "B", false),
-			  C(this, registerState.C, registerState.C, "C", false),
-			  D(this, registerState.D, registerState.D, "D", false),
-			  E(this, registerState.E, registerState.E, "E", false),
-			  H(this, registerState.E, registerState.E, "H", false),
-			  L(this, registerState.L, registerState.L, "L", false)
+			BC(this, registerState.BC, registerState.BC, "BC", true, "{name}: 0x{u16:04x}"),
+			DE(this, registerState.DE, registerState.DE, "DE", true, "{name}: 0x{u16:04x}"),
+			HL(this, registerState.HL, registerState.HL, "HL", true, "{name}: 0x{u16:04x}"),
+			A(this, registerState.A, registerState.A, "A", false),
+			F(this, registerState.F, registerState.F, "F", false),
+			B(this, registerState.B, registerState.B, "B", false),
+			C(this, registerState.C, registerState.C, "C", false),
+			D(this, registerState.D, registerState.D, "D", false),
+			E(this, registerState.E, registerState.E, "E", false),
+			H(this, registerState.E, registerState.E, "H", false),
+			L(this, registerState.L, registerState.L, "L", false),
+			PC(this, registerState.PC, registerState.PC, "PC", true, "{name}: 0x{u16:04x}")
 		{
 		}
 	};
 
-	class Instance : public Common::InstructionBasedCoreInstance
+	class Interpreter
 	{
-	private:
-		InstructionDecoder decoder;
-
-		State state;
 	public:
-		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
-
-		ReturnStatus Step();
-
-		std::string Disassemble(const std::vector<u8>& data);
-		Common::CoreState* getCoreState();
-		std::chrono::nanoseconds getStepPeriod();
+		static void NOP(Common::CoreState* state, const std::vector<u64>& operands);
 	};
 
-	class Core : public Common::Core
+	class InstructionDecoder : public Common::InstructionDecoder
 	{
+	private:
+		std::vector<Instruction> instructions = 
+		{
+			Instruction("nop", 1, Interpreter::NOP) // 0x00
+		};
+
+		std::vector<Instruction> CBInstructions =
+		{
+
+		};
 	public:
-		Core(Common::CoreLoader* loader);
-		
-		std::string getName();
-		std::string getDescription();
-		Common::Core::Type getType();
-		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
+		Instruction* getInstruction(const std::vector<u64>& opcodes);
+		std::string Disassemble(const DecodeInfo& info);
+		DecodeInfo Decode(Common::InstructionStream& stream);
 	};
 }
