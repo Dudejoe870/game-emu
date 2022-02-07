@@ -14,6 +14,16 @@ else()
     add_compile_options("-Wall" "-Wextra" "$<$<CONFIG:RELEASE>:-O3>")
 endif()
 
+set(GAME_EMU_ALL_CORES 
+    "gameemu-core-gb"
+)
+
+option(GAME_EMU_CORE_LIST "A semicolon separated List of System cores to build (can be \"all\")" "all")
+
+if(GAME_EMU_CORE_LIST STREQUAL "all")
+    set(GAME_EMU_CORE_LIST ${GAME_EMU_ALL_CORES})
+endif()
+
 set(LLVM_BUILD_STATIC ON CACHE INTERNAL "" FORCE)
 
 set(LLVM_OPTIMIZED_TABLEGEN ON CACHE INTERNAL "" FORCE)
@@ -53,5 +63,24 @@ add_subdirectory ("fmt" EXCLUDE_FROM_ALL)
 add_subdirectory ("game-emu-common")
 add_subdirectory ("game-emu-cli")
 
-add_subdirectory ("gameemu-core-gbz80")
-add_subdirectory ("gameemu-core-gb")
+function(add_core_dep CORE)
+    list(FIND GAME_EMU_CORE_LIST ${CORE} CORE_INDEX)
+    if (NOT ${CORE_INDEX} EQUAL -1)
+        return()
+    endif()
+    message(STATUS "Adding Core Dependency ${CORE}...")
+    set(CORE_DEPS "")
+    add_subdirectory(${CORE})
+    foreach (DEP ${CORE_DEPS})
+        add_core_dep(${DEP})
+    endforeach()
+endfunction()
+
+foreach (CORE ${GAME_EMU_CORE_LIST})
+    message(STATUS "Adding Core ${CORE}...")
+    set(CORE_DEPS "")
+    add_subdirectory(${CORE})
+    foreach (DEP ${CORE_DEPS})
+        add_core_dep(${DEP})
+    endforeach()
+endforeach()

@@ -1,4 +1,5 @@
 # game-emu
+
 A cross-platform multi-system emulator / library
 > Note: Heavily WIP
 
@@ -12,10 +13,10 @@ A cross-platform multi-system emulator / library
 
 # Cores
 
-| Core  | Description                                                                         |
-|-------|-------------------------------------------------------------------------------------|
-| gb    | A Core emulating the Gameboy                                                        |
-| gbz80 | A Core emulating the specific Z80 found on the Gameboy (differs from a regular Z80) |
+| Core               | Description                                                                         |
+|--------------------|-------------------------------------------------------------------------------------|
+| gameemu-core-gb    | A Core emulating the Gameboy                                                        |
+| gameemu-core-gbz80 | A Core emulating the specific Z80 found on the Gameboy (differs from a regular Z80) |
 
 More cores are to come, currently it is very WIP.
 
@@ -24,10 +25,20 @@ If you want to contribute a Core that'd be greatly appreciated!
 # Building
 
 ## Dependencies
+
 Due to most of the dependencies being included as submodules, 
 there aren't actually really any to download 
 other than CMake and a general building environment 
 (MSVC, Clang, GCC) (Clang is untested but should(?) work)
+
+## CMake Options
+
+| Option             | Description                                                                                                                                                                                                                                                                                                |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CMAKE_BUILD_TYPE   | Set this to either "Debug", "Release", or "RelWithDebInfo" (Release with Debug Info) to compile with that configuration.                                                                                                                                                                                   |
+| GAME_EMU_CORE_LIST | A semicolon separated list of Cores you'd like to build (or alternatively can be "all"), the list can contain any of the core names listed above. This will automatically build the dependencies needed for each Core, so it is only required to list the system cores you want and the rest is automatic. |
+
+You can use any of these options by passing ```-D(option)=(value)``` to CMake on the command line.
 
 ## Windows
 
@@ -70,6 +81,7 @@ include the lib subdirectory in the install path.
 Or you can add it to your /etc/ld.so.conf config.
 
 # Contribution
+
 If you want to contribute, be my guest! I'd love to see what other people have to bring, 
 even if it's just cleaning up some of my more... interesting code. 
 (Hopefully it's not too bad!)
@@ -81,5 +93,6 @@ So any contributions to that (fixing up things, or
 adding new features, etc.) would be greatly appreciated!
 
 # Issues
+
 If you've read some of the code and have some suggestions but don't have time to 
 contribute, opening an issue with any suggestions would be greatly appreciated as well!
