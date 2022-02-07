@@ -80,6 +80,14 @@ your LD_LIBRARY_PATH variable will have to
 include the lib subdirectory in the install path. 
 Or you can add it to your /etc/ld.so.conf config.
 
+To uninstall simply run
+```bash
+sudo ninja uninstall
+```
+from the build folder.
+> Note: Doesn't get rid of all the subdirectories for security reasons 
+(One misstep and we could accidentally delete your entire root drive!)
+
 # Contribution
 
 If you want to contribute, be my guest! I'd love to see what other people have to bring, 

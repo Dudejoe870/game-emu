@@ -53,8 +53,8 @@ add_subdirectory ("llvm-project/llvm" EXCLUDE_FROM_ALL)
 
 add_subdirectory ("dynalo" EXCLUDE_FROM_ALL)
 
-set(ARGS_BUILD_EXAMPLE OFF)
-set(ARGS_BUILD_UNITTESTS OFF)
+set(ARGS_BUILD_EXAMPLE OFF CACHE INTERNAL "" FORCE)
+set(ARGS_BUILD_UNITTESTS OFF CACHE INTERNAL "" FORCE)
 
 add_subdirectory ("args" EXCLUDE_FROM_ALL)
 add_subdirectory ("cli" EXCLUDE_FROM_ALL)
@@ -84,3 +84,9 @@ foreach (CORE ${GAME_EMU_CORE_LIST})
         add_core_dep(${DEP})
     endforeach()
 endforeach()
+
+configure_file("uninstall.cmake" "uninstall.cmake" NO_SOURCE_PERMISSIONS @ONLY)
+
+add_custom_target(uninstall
+    "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
+)
