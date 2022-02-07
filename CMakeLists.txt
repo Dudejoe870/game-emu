@@ -18,7 +18,7 @@ set(GAME_EMU_ALL_CORES
     "gameemu-core-gb"
 )
 
-option(GAME_EMU_CORE_LIST "A semicolon separated List of System cores to build (can be \"all\")" "all")
+set(GAME_EMU_CORE_LIST "all" CACHE STRING "A semicolon separated List of System cores to build (can be \"all\")")
 
 if(GAME_EMU_CORE_LIST STREQUAL "all")
     set(GAME_EMU_CORE_LIST ${GAME_EMU_ALL_CORES})
