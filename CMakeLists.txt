@@ -90,3 +90,7 @@ configure_file("uninstall.cmake" "uninstall.cmake" NO_SOURCE_PERMISSIONS @ONLY)
 add_custom_target(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
 )
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    install(CODE "execute_process(COMMAND ldconfig)")
+endif()
