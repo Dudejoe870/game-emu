@@ -17,16 +17,6 @@ namespace GameEmu::Common
 			if (thread.joinable()) thread.join();
 	}
 
-	void RunLoop::LoopMultithreaded()
-	{
-		LoopImpl<true>();
-	}
-
-	void RunLoop::Loop()
-	{
-		LoopImpl<false>();
-	}
-
 	void RunLoop::LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, s32 coreIndex)
 	{
 		while (running)
@@ -96,12 +86,12 @@ namespace GameEmu::Common
 			if (systemInstance->isMultithreaded())
 			{
 				systemReady = true;
-				runThread = std::thread(&RunLoop::LoopMultithreaded, this);
+				runThread = std::thread(&RunLoop::Loop<true>, this);
 			}
 			else
 			{
 				timingInfo.resize(systemInstance->getInstances().size());
-				runThread = std::thread(&RunLoop::Loop, this);
+				runThread = std::thread(&RunLoop::Loop<false>, this);
 			}
 		}
 	}

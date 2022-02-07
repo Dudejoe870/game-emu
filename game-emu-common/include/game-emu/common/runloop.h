@@ -51,11 +51,13 @@ namespace GameEmu::Common
 		}
 
 		/*
-		 The actual Runloop implementation, with two templated versions. One for multithreading with extra synchronization checks, 
+		 The Run Loop, with two templated versions. One for multithreading with extra synchronization checks, 
 		 and one without that just forloops through all the cores, suitable for simpler systems.
+		 (Should be noted that individual cores can still create new threads even without multithreading enabled, 
+		 it's just that they'll have to handle timing / pausing / synchronization themselves)
 		*/
 		template <bool multithreaded = false>
-		void LoopImpl()
+		void Loop()
 		{
 			systemInstance->SystemInit();
 
@@ -106,16 +108,6 @@ namespace GameEmu::Common
 				WaitForPeriod(stepPeriod, startTime, endTime);
 			}
 		}
-
-		/*
-		 The Loop implementation for Multithreading (just calls LoopImpl)
-		*/
-		void LoopMultithreaded();
-
-		/*
-		 The Loop implementation for Single-Threading (just calls LoopImpl)
-		*/
-		void Loop();
 
 		/*
 		 The Loop implementation for individual Cores when Multithreading.
