@@ -12,12 +12,14 @@ namespace GameEmu::Common
 		struct DebugRegisterInfo
 		{
 			std::string name;
+			std::string format;
 			std::variant<u32*, u64*, u8*, u16*, float*, double*, bool*> pValue;
 			std::endian endian;
 
-			DebugRegisterInfo(std::string name, std::variant<u32*, u64*, u8*, u16*, float*, double*, bool*> pValue, std::endian endian)
+			DebugRegisterInfo(const std::string& name, const std::string& format, std::variant<u32*, u64*, u8*, u16*, float*, double*, bool*> pValue, std::endian endian)
 			{
 				this->name = name;
+				this->format = format;
 				this->pValue = pValue;
 				this->endian = endian;
 			}
@@ -25,6 +27,19 @@ namespace GameEmu::Common
 			inline bool isFloatingPoint()
 			{
 				return std::holds_alternative<float*>(pValue) || std::holds_alternative<double*>(pValue);
+			}
+
+			inline std::string getFormatted()
+			{
+				return fmt::format(fmt::runtime(format), 
+					fmt::arg("name", name),
+					fmt::arg("u8", getValue<u8>()),
+					fmt::arg("u16", getValue<u16>()),
+					fmt::arg("u32", getValue<u32>()),
+					fmt::arg("u64", getValue<u64>()),
+					fmt::arg("f32", getValue<float>()),
+					fmt::arg("f64", getValue<double>()),
+					fmt::arg("bool", getValue<bool>()));
 			}
 
 			template <class T>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
+#include <game-emu/common/endianutils.h>
 
 #include <game-emu/common/corestate.h>
 
@@ -10,7 +11,7 @@ namespace GameEmu::Common
 	 This class represents a "Register".
 	 This could be a CPU register (in that case endian is recommended to be std::endian::native)
 	 or a Memory Register, possibly mapped into a Cores memory space 
-	 (in that case it should be whatever endian this register is on the native device, probably the CPUs native endian)
+	 (in that case it should be whatever endian this register is on the emulated device, probably the emulated CPUs native endian)
 	*/
 	template <class T, std::endian endian, bool events = true>
 	class Register
@@ -22,28 +23,15 @@ namespace GameEmu::Common
 		std::function<T(T value)> readEvent;
 		std::function<T(T value, T writeValue)> writeEvent;
 
-		Register(CoreState* coreState, T& readValue, T& writeValue, std::string debugName, std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
+		Register(CoreState* coreState, T& readValue, T& writeValue, const std::string& debugName, bool canDebug = true, std::string format = "{name}: {u64}", std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
 		{
 			this->pReadValue = &readValue;
 			this->pWriteValue = &writeValue;
 			this->readEvent = readEvent;
 			this->writeEvent = writeEvent;
-			if (coreState)
+			if (coreState && canDebug)
 			{
-				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, pReadValue, endian));
-			}
-		}
-
-		Register(CoreState* coreState, T& readValue, T& writeValue, std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
-		{
-			this->pReadValue = &readValue;
-			this->pWriteValue = &writeValue;
-			this->readEvent = readEvent;
-			this->writeEvent = writeEvent;
-			if (coreState)
-			{
-				std::string debugName = "r" + coreState->debugRegisters.size();
-				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, pReadValue, endian));
+				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, format, pReadValue, endian));
 			}
 		}
 

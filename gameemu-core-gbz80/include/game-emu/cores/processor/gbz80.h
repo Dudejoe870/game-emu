@@ -108,18 +108,18 @@ namespace GameEmu::Cores::Processor::GBZ80
 		Common::Register<u8, std::endian::native, false> L;
 
 		State()
-			: AF(this, registerState.AF, registerState.AF, "AF"),
-			  BC(this, registerState.BC, registerState.BC, "BC"),
-			  DE(this, registerState.DE, registerState.DE, "DE"),
-			  HL(this, registerState.HL, registerState.HL, "HL"),
-			  A(this, registerState.A, registerState.A, "A"),
-			  F(this, registerState.F, registerState.F, "F"),
-			  B(this, registerState.B, registerState.B, "B"),
-			  C(this, registerState.C, registerState.C, "C"),
-			  D(this, registerState.D, registerState.D, "D"),
-			  E(this, registerState.E, registerState.E, "E"),
-			  H(this, registerState.E, registerState.E, "H"),
-			  L(this, registerState.L, registerState.L, "L")
+			: AF(this, registerState.AF, registerState.AF, "AF", true, "{name}: 0x{u16:04x}"),
+			  BC(this, registerState.BC, registerState.BC, "BC", true, "{name}: 0x{u16:04x}"),
+			  DE(this, registerState.DE, registerState.DE, "DE", true, "{name}: 0x{u16:04x}"),
+			  HL(this, registerState.HL, registerState.HL, "HL", true, "{name}: 0x{u16:04x}"),
+			  A(this, registerState.A, registerState.A, "A", false),
+			  F(this, registerState.F, registerState.F, "F", false),
+			  B(this, registerState.B, registerState.B, "B", false),
+			  C(this, registerState.C, registerState.C, "C", false),
+			  D(this, registerState.D, registerState.D, "D", false),
+			  E(this, registerState.E, registerState.E, "E", false),
+			  H(this, registerState.E, registerState.E, "H", false),
+			  L(this, registerState.L, registerState.L, "L", false)
 		{
 		}
 	};

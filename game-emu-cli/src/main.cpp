@@ -175,11 +175,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					loop.AcquireLock();
 
 					for (Common::CoreState::DebugRegisterInfo& info : systemCoreState->getRegisters())
-					{
-						if (info.isFloatingPoint())
-							o << info.name << ": " << info.getValue<double>() << std::endl;
-						else o << info.name << ": " << info.getValue<u64>() << std::endl;
-					}
+						o << info.getFormatted() << std::endl;
 
 					loop.Unlock();
 				}, "Display the core state registers.");
@@ -216,11 +212,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 						loop.AcquireLock();
 
 						for (Common::CoreState::DebugRegisterInfo& info : coreState->getRegisters())
-						{
-							if (info.isFloatingPoint())
-								o << info.name << ": " << info.getValue<double>() << std::endl;
-							else o << info.name << ": " << info.getValue<u64>() << std::endl;
-						}
+							o << info.getFormatted() << std::endl;
 
 						loop.Unlock();
 					}, "Display Core State Registers.");
