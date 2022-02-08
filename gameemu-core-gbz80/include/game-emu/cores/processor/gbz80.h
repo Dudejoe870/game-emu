@@ -17,6 +17,30 @@
 
 namespace GameEmu::Cores::Processor::GBZ80
 {
+	class Interpreter
+	{
+	public:
+		static void NOP(Common::CoreState* state, const std::vector<u64>& operands);
+	};
+
+	class InstructionDecoder : public Common::InstructionDecoder
+	{
+	private:
+		std::vector<Instruction> instructions =
+		{
+			Instruction("nop", 1, Interpreter::NOP) // 0x00
+		};
+
+		std::vector<Instruction> CBInstructions =
+		{
+
+		};
+	public:
+		Instruction* getInstruction(const std::vector<u64>& opcodes);
+		std::string Disassemble(const DecodeInfo& info);
+		DecodeInfo Decode(Common::InstructionStream& stream);
+	};
+
 	class Core : public Common::Core
 	{
 	public:
@@ -26,22 +50,6 @@ namespace GameEmu::Cores::Processor::GBZ80
 		std::string getDescription();
 		Common::Core::Type getType();
 		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
-	};
-
-	class Instance : public Common::InstructionBasedCoreInstance
-	{
-	private:
-		InstructionDecoder decoder;
-
-		State state;
-	public:
-		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
-
-		ReturnStatus Step();
-
-		std::string Disassemble(const std::vector<u8>& data);
-		Common::CoreState* getCoreState();
-		std::chrono::nanoseconds getStepPeriod();
 	};
 
 	class State : public Common::CoreState
@@ -138,27 +146,19 @@ namespace GameEmu::Cores::Processor::GBZ80
 		}
 	};
 
-	class Interpreter
-	{
-	public:
-		static void NOP(Common::CoreState* state, const std::vector<u64>& operands);
-	};
-
-	class InstructionDecoder : public Common::InstructionDecoder
+	class Instance : public Common::InstructionBasedCoreInstance
 	{
 	private:
-		std::vector<Instruction> instructions = 
-		{
-			Instruction("nop", 1, Interpreter::NOP) // 0x00
-		};
+		InstructionDecoder decoder;
 
-		std::vector<Instruction> CBInstructions =
-		{
-
-		};
+		State state;
 	public:
-		Instruction* getInstruction(const std::vector<u64>& opcodes);
-		std::string Disassemble(const DecodeInfo& info);
-		DecodeInfo Decode(Common::InstructionStream& stream);
+		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
+
+		ReturnStatus Step();
+
+		std::string Disassemble(const std::vector<u8>& data);
+		Common::CoreState* getCoreState();
+		std::chrono::nanoseconds getStepPeriod();
 	};
 }
