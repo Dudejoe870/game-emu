@@ -18,7 +18,6 @@
 #include <chrono>
 #include <variant>
 #include <fmt/core.h>
-#include <bit>
 #include <functional>
 
 using u8 = std::uint8_t;

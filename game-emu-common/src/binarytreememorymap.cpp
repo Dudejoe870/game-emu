@@ -43,7 +43,6 @@ namespace GameEmu::Common
 	/*
 	 8-bit Write
 	*/
-
 	void BinaryTreeMemoryMap::WriteU8(u8 value, u64 address)
 	{
 		WriteImpl<u8, std::endian::native>(static_cast<u64>(value), address);
@@ -52,7 +51,6 @@ namespace GameEmu::Common
 	/*
 	 8-bit Read
 	*/
-
 	u8 BinaryTreeMemoryMap::ReadU8(u64 address)
 	{
 		return static_cast<u8>(ReadImpl<u8, std::endian::native>(address));
@@ -61,7 +59,6 @@ namespace GameEmu::Common
 	/*
 	 16-bit Write
 	*/
-
 	void BinaryTreeMemoryMap::WriteU16BigEndianImpl(u16 value, u64 address)
 	{
 		WriteImpl<u16, std::endian::big>(static_cast<u64>(value), address);
@@ -75,7 +72,6 @@ namespace GameEmu::Common
 	/*
 	 16-bit Read
 	*/
-
 	u16 BinaryTreeMemoryMap::ReadU16BigEndianImpl(u64 address)
 	{
 		return static_cast<u16>(ReadImpl<u16, std::endian::big>(address));
@@ -89,7 +85,6 @@ namespace GameEmu::Common
 	/*
 	 32-bit Write
 	*/
-
 	void BinaryTreeMemoryMap::WriteU32BigEndianImpl(u32 value, u64 address)
 	{
 		WriteImpl<u32, std::endian::big>(static_cast<u64>(value), address);
@@ -103,7 +98,6 @@ namespace GameEmu::Common
 	/*
 	 32-bit Read
 	*/
-
 	u32 BinaryTreeMemoryMap::ReadU32BigEndianImpl(u64 address)
 	{
 		return static_cast<u32>(ReadImpl<u32, std::endian::big>(address));
@@ -117,7 +111,6 @@ namespace GameEmu::Common
 	/*
 	 64-bit Write
 	*/
-
 	void BinaryTreeMemoryMap::WriteU64BigEndianImpl(u64 value, u64 address)
 	{
 		WriteImpl<u64, std::endian::big>(value, address);
@@ -131,7 +124,6 @@ namespace GameEmu::Common
 	/*
 	 64-bit Read
 	*/
-
 	u64 BinaryTreeMemoryMap::ReadU64BigEndianImpl(u64 address)
 	{
 		return ReadImpl<u64, std::endian::big>(address);
