@@ -1,5 +1,7 @@
 # game-emu
 
+[![game-emu](https://github.com/Dudejoe870/game-emu/actions/workflows/game-emu.yml/badge.svg)](https://github.com/Dudejoe870/game-emu/actions/workflows/game-emu.yml)
+
 A cross-platform multi-system emulator / library
 > Note: Heavily WIP
 

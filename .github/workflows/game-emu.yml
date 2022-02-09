@@ -3,8 +3,14 @@ name: "game-emu"
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
 
 env:
   BUILD_TYPE: Release
