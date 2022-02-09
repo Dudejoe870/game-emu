@@ -50,7 +50,7 @@ jobs:
         dynalo
         fmt
         llvm-project
-        out/build
+        out
        key: ${{ runner.os }}-${{ hashFiles('.gitmodules') }}
 
     - name: Update Submodules (if not cached)
