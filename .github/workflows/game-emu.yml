@@ -1,4 +1,4 @@
-name: Build
+name: "game-emu"
 
 on:
   push:
@@ -11,6 +11,7 @@ env:
 
 jobs:
   build:
+    name: Build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -34,7 +35,7 @@ jobs:
       if: matrix.os == 'ubuntu-20.04'
 
     # Cache the Submodules (Especially LLVM, it's a huge project that takes a long time to clone)
-    - name: Try to get Submodules from Cache
+    - name: Try to get Submodules and Build Directory from Cache
       uses: actions/cache@v2
       id: cache-modules
       with:
@@ -44,6 +45,7 @@ jobs:
         dynalo
         fmt
         llvm-project
+        out/build
        key: ${{ runner.os }}-${{ hashFiles('.gitmodules') }}
 
     - name: Update Submodules (if not cached)
@@ -53,18 +55,54 @@ jobs:
       if: steps.cache-modules.outputs.cache-hit != 'true'
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja
+      run: cmake -B ${{github.workspace}}/out/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/out/build
 
     - name: Install
       run: |
-       cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}/install
+       cmake --install ${{github.workspace}}/out/build --prefix ${{github.workspace}}/out/install
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       with:
        name: ${{ matrix.os }}-${{ runner.arch }}-build
-       path: ${{github.workspace}}/install
-    
+       path: ${{github.workspace}}/out/install
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Try to get Submodules and Build Directory from Cache
+      uses: actions/cache@v2
+      id: cache-modules
+      with:
+       path: | 
+        args
+        cli
+        dynalo
+        fmt
+        llvm-project
+        out/build
+       key: ${{ runner.os }}-${{ hashFiles('.gitmodules') }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
