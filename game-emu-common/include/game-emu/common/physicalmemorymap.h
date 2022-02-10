@@ -2,6 +2,7 @@
 
 #include <game-emu/common/stdcommon.h>
 #include <game-emu/common/physicaladdresstranslator.h>
+#include <game-emu/common/symbolhelper.h>
 
 #include <game-emu/common/endianutils.h>
 
@@ -16,7 +17,7 @@ namespace GameEmu::Common
 	*/
 	class PhysicalMemoryMap : public PhysicalAddressTranslator
 	{
-	protected:
+	public:
 		struct Entry
 		{
 			u64 address;
@@ -77,19 +78,21 @@ namespace GameEmu::Common
 				return l.address < r.address;
 			}
 		};
-	public:
+
 		PhysicalMemoryMap(u64 addressMask) 
 			: PhysicalAddressTranslator(addressMask)
 		{
 		}
 
-		virtual Entry& Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress) = 0;
-		inline Entry& Map(u8* hostMemory, u64 size, u64 baseAddress)
+		virtual Entry* Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress,
+			Entry::ReadEventFunction readEvent = nullptr, Entry::WriteEventFunction writeEvent = nullptr) = 0;
+		inline Entry* Map(u8* hostMemory, u64 size, u64 baseAddress,
+			Entry::ReadEventFunction readEvent = nullptr, Entry::WriteEventFunction writeEvent = nullptr)
 		{
-			return Map(hostMemory, hostMemory, size, baseAddress);
+			return Map(hostMemory, hostMemory, size, baseAddress, readEvent, writeEvent);
 		}
 
-		virtual void Unmap(const Entry& entry) = 0;
+		virtual void Unmap(const Entry* entry) = 0;
 
 		/*
 		 Updates the Physical Address space with the current mappings.
@@ -129,7 +132,7 @@ namespace GameEmu::Common
 
 		std::vector<Entry> entries;
 
-		std::shared_ptr<BinaryTree::Node> sortedVectorToBinaryTree(std::vector<Entry>::iterator begin, std::vector<Entry>::iterator end);
+		std::shared_ptr<BinaryTree::Node> sortedVectorToBinaryTree(std::vector<Entry>& entries, s64 start, s64 end);
 
 		inline std::shared_ptr<BinaryTree::Node> findNode(u64 address)
 		{
@@ -152,24 +155,11 @@ namespace GameEmu::Common
 				}
 				else if (address >= baseAddress && address <= endAddress)
 				{
-					// Deal with overlapping memory entries.
-					if (currentNode->right) 
-					{
-						u64 rightBaseAddress = currentNode->right->data.address;
-						u64 rightEndAddress = currentNode->right->data.address + (currentNode->right->data.size - 1);
-
-						if (address >= rightBaseAddress && address <= rightEndAddress)
-						{
-							currentNode = currentNode->right;
-							continue;
-						}
-					}
-
-					break;
+					return currentNode;
 				}
 			}
 
-			return currentNode;
+			return nullptr;
 		}
 
 		template <class T, std::endian endian>
@@ -179,7 +169,7 @@ namespace GameEmu::Common
 			Entry& entry = findNode(address)->data;
 
 			u64 offset = address - entry.address;
-			if (offset + sizeof(T) >= entry.size) return;
+			if (offset + (sizeof(T) - 1) >= entry.size) return;
 			T* pReadValue = reinterpret_cast<T*>(&entry.hostReadMemory[offset]);
 			T* pWriteValue = reinterpret_cast<T*>(&entry.hostWriteMemory[offset]);
 
@@ -200,7 +190,7 @@ namespace GameEmu::Common
 			Entry& entry = findNode(address)->data;
 
 			u64 offset = address - entry.address;
-			if (offset + sizeof(T) >= entry.size) return 0;
+			if (offset + (sizeof(T) - 1) >= entry.size) return 0;
 			T* pReadValue = reinterpret_cast<T*>(&entry.hostReadMemory[offset]);
 			T* pWriteValue = reinterpret_cast<T*>(&entry.hostWriteMemory[offset]);
 
@@ -213,35 +203,37 @@ namespace GameEmu::Common
 			return Util::ToNativeEndian<endian>(*pReadValue);
 		}
 	protected:
-		void WriteU16BigEndianImpl(u16 value, u64 address);
-		void WriteU16LittleEndianImpl(u16 value, u64 address);
+		// We have to export these too because they are used in inline functions.
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU16BigEndianImpl(u16 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU16LittleEndianImpl(u16 value, u64 address);
 
-		u16 ReadU16BigEndianImpl(u64 address);
-		u16 ReadU16LittleEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u16 ReadU16BigEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u16 ReadU16LittleEndianImpl(u64 address);
 
-		void WriteU32BigEndianImpl(u32 value, u64 address);
-		void WriteU32LittleEndianImpl(u32 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU32BigEndianImpl(u32 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU32LittleEndianImpl(u32 value, u64 address);
 
-		u32 ReadU32BigEndianImpl(u64 address);
-		u32 ReadU32LittleEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u32 ReadU32BigEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u32 ReadU32LittleEndianImpl(u64 address);
 
-		void WriteU64BigEndianImpl(u64 value, u64 address);
-		void WriteU64LittleEndianImpl(u64 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU64BigEndianImpl(u64 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU64LittleEndianImpl(u64 value, u64 address);
 
-		u64 ReadU64BigEndianImpl(u64 address);
-		u64 ReadU64LittleEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u64 ReadU64BigEndianImpl(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u64 ReadU64LittleEndianImpl(u64 address);
 	public:
 		BinaryTreeMemoryMap(u64 addressMask)
 			: PhysicalMemoryMap(addressMask)
 		{
 		}
 
-		void WriteU8(u8 value, u64 address);
-		u8 ReadU8(u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void WriteU8(u8 value, u64 address);
+		LIBGAMEEMU_COMMON_DLL_EXPORT u8 ReadU8(u64 address);
 
-		Entry& Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress);
-		void Unmap(const Entry& entry);
+		LIBGAMEEMU_COMMON_DLL_EXPORT Entry* Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress,
+			Entry::ReadEventFunction readEvent = nullptr, Entry::WriteEventFunction writeEvent = nullptr);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void Unmap(const Entry* entry);
 
-		void Update();
+		LIBGAMEEMU_COMMON_DLL_EXPORT void Update();
 	};
 }

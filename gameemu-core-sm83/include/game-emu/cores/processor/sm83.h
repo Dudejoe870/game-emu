@@ -15,7 +15,7 @@
 #include <game-emu/common/corestate.h>
 #include <game-emu/common/register.h>
 
-namespace GameEmu::Cores::Processor::GBZ80
+namespace GameEmu::Cores::Processor::SM83
 {
 	class Interpreter
 	{
@@ -49,7 +49,9 @@ namespace GameEmu::Cores::Processor::GBZ80
 		std::string getName();
 		std::string getDescription();
 		Common::Core::Type getType();
-		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
+		std::unordered_map<std::string, Common::PropertyValue> getDefaultProperties();
+
+		std::shared_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
 	};
 
 	class State : public Common::CoreState
@@ -152,6 +154,8 @@ namespace GameEmu::Cores::Processor::GBZ80
 		InstructionDecoder decoder;
 
 		State state;
+
+		std::chrono::nanoseconds stepPeriod;
 	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 

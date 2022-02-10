@@ -34,7 +34,7 @@ namespace GameEmu::Common
 
 		/*
 		 Wait at the end of a Core loop to pad the time 
-		 if the Core stepping was much faster than the real time it takes on hardware to step.
+		 if the Core step function was much faster than the real time it takes on hardware to step.
 		*/
 		inline void WaitForPeriod(std::chrono::nanoseconds period,
 			std::chrono::time_point<std::chrono::steady_clock> startTime,
@@ -59,7 +59,12 @@ namespace GameEmu::Common
 		template <bool multithreaded = false>
 		void Loop()
 		{
-			systemInstance->SystemInit();
+			systemInstance->Init();
+			if constexpr (!multithreaded)
+			{
+				for (const std::shared_ptr<CoreInstance>& instance : systemInstance->getInstances())
+					instance->Init();
+			}
 
 			while (running)
 			{
@@ -93,7 +98,7 @@ namespace GameEmu::Common
 				{
 					for (u32 i = 0; i < systemInstance->getInstances().size(); ++i)
 					{
-						const std::unique_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
+						const std::shared_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
 						if (!instance->paused)
 						{
 							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep) instance->Step();
@@ -112,7 +117,7 @@ namespace GameEmu::Common
 		/*
 		 The Loop implementation for individual Cores when Multithreading.
 		*/
-		void LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, s32 coreIndex);
+		void LoopMultithreadedCore(const std::shared_ptr<CoreInstance>& instance, s32 coreIndex);
 
 		/*
 		 The current System stepPeriod for Single-Threading (equals the smallest step for any of the cores).
@@ -139,7 +144,7 @@ namespace GameEmu::Common
 		std::vector<InstanceTimingInfo> timingInfo;
 	public:
 		Core* currentSystem;
-		std::unique_ptr<CoreInstance> systemInstance;
+		std::shared_ptr<CoreInstance> systemInstance;
 
 		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop();
 		LIBGAMEEMU_COMMON_DLL_EXPORT ~RunLoop();

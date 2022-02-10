@@ -20,10 +20,10 @@ namespace GameEmu::Common
 	{
 	}
 
-	s32 CoreInstance::addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties)
+	u64 CoreInstance::addInstanceImpl(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
-		instances.push_back(core->createNewInstance(runState, properties));
-		return static_cast<s32>(instances.size()) - 1;
+		instances.push_back(dependency->createNewInstance(runState, properties));
+		return instances.size() - 1;
 	}
 
 	CoreInstance::ReturnStatus CoreInstance::Step()
@@ -31,7 +31,7 @@ namespace GameEmu::Common
 		return ReturnStatus::Error;
 	}
 
-	CoreInstance::ReturnStatus CoreInstance::SystemInit()
+	CoreInstance::ReturnStatus CoreInstance::Init()
 	{
 		return ReturnStatus::Error;
 	}

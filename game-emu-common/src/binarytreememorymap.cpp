@@ -2,42 +2,47 @@
 
 namespace GameEmu::Common
 {
-	PhysicalMemoryMap::Entry& BinaryTreeMemoryMap::Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress)
+	PhysicalMemoryMap::Entry* BinaryTreeMemoryMap::Map(u8* hostReadMemory, u8* hostWriteMemory, u64 size, u64 baseAddress,
+		Entry::ReadEventFunction readEvent, Entry::WriteEventFunction writeEvent)
 	{
-		entries.push_back(Entry(baseAddress & addressMask, hostReadMemory, hostWriteMemory, size));
-		return entries[entries.size() - 1];
+		entries.push_back(Entry(baseAddress &addressMask, hostReadMemory, hostWriteMemory, size, readEvent, writeEvent));
+		return &entries[entries.size() - 1];
 	}
 
-	void BinaryTreeMemoryMap::Unmap(const Entry& entry)
+	void BinaryTreeMemoryMap::Unmap(const Entry* entry)
 	{
-		std::vector<Entry>::iterator entryIndex = std::find(entries.begin(), entries.end(), entry);
+		std::vector<Entry>::iterator entryIndex = std::find(entries.begin(), entries.end(), *entry);
 		if (entryIndex == entries.end()) return;
 
 		entries.erase(entryIndex);
 	}
 
-	std::shared_ptr<BinaryTreeMemoryMap::BinaryTree::Node> BinaryTreeMemoryMap::sortedVectorToBinaryTree(
-		std::vector<Entry>::iterator begin, std::vector<Entry>::iterator end)
+	std::shared_ptr<BinaryTreeMemoryMap::BinaryTree::Node> BinaryTreeMemoryMap::sortedVectorToBinaryTree(std::vector<Entry>& entries, s64 start, s64 end)
 	{
-		if (begin > end)
+		if (start > end)
 			return nullptr;
-		
-		s64 mid = (end - begin) / 2;
-		std::shared_ptr<BinaryTree::Node> root = std::make_shared<BinaryTree::Node>(begin[mid]);
+		else if (start == end)
+			return std::make_shared<BinaryTree::Node>(entries[start]);
 
-		root->left = sortedVectorToBinaryTree(begin, begin + (mid - 1));
+		s64 mid = (start + end) / 2;
+		std::shared_ptr<BinaryTree::Node> root = std::make_shared<BinaryTree::Node>(entries[mid]);
 
-		root->right = sortedVectorToBinaryTree(begin + (mid + 1), end);
+		root->left = sortedVectorToBinaryTree(entries, start, mid - 1);
+
+		root->right = sortedVectorToBinaryTree(entries, mid + 1, end);
 
 		return root;
 	}
 
 	void BinaryTreeMemoryMap::Update()
 	{
-		std::sort(entries.begin(), entries.end());
+		if (!entries.empty())
+		{
+			std::sort(entries.begin(), entries.end());
 
-		// Rebalance the Binary Search Tree
-		tree.root = sortedVectorToBinaryTree(entries.begin(), entries.end());
+			// Rebalance the Binary Search Tree
+			tree.root = sortedVectorToBinaryTree(entries, 0, entries.size() - 1);
+		}
 	}
 
 	/*

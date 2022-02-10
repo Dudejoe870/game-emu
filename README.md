@@ -18,11 +18,34 @@ A cross-platform multi-system emulator / library
 | Core               | Description                                                                         |
 |--------------------|-------------------------------------------------------------------------------------|
 | gameemu-core-gb    | A Core emulating the Gameboy                                                        |
-| gameemu-core-gbz80 | A Core emulating the specific Z80 found on the Gameboy (differs from a regular Z80) |
+| gameemu-core-sm83  | A Core emulating the Sharp SM83 found on the Gameboy                                |
 
 More cores are to come, currently it is very WIP.
 
 If you want to contribute a Core that'd be greatly appreciated!
+
+# Pre-built Binaries
+
+Currently this in development so it isn't really recommended to run the 
+software if you don't intend to use the source code.
+
+Nevertheless there are Binaries that get built every commit to the main branch,
+just go to the ``Actions`` tab and click on the commit you want to download,
+if you scroll down there should be ZIP files you can download.
+(If there aren't that means the commit is too old, 
+this can happen even on the newest commit if there hasn't been 
+one in the while, so in that case you'll need to build from source).
+
+> Note: It is NOT recommended to use the Linux build as it could heavily 
+depend on what version of the operating system you are using. For example, 
+the Ubuntu build won't work on Arch, due to LibC being a different version.
+It also makes uninstalling a lot easier if you compile from source.
+
+Just download the correct one for your operating system and architecture, 
+and run the software. (Currently only supports x86-64, 
+ARM support might come in the future most notably for Raspberry Pi / Android support
+\+ perhaps even other architectures like PowerPC for porting 
+to older consoles like the Wii / Xbox360)
 
 # Building
 

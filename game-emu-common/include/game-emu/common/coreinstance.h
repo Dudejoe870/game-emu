@@ -9,23 +9,38 @@
 
 #include <game-emu/common/corestate.h>
 
+#include <game-emu/common/physicaladdresstranslator.h>
+
 namespace GameEmu::Common
 {
 	class Core;
 
 	class CoreInstance
 	{
+	private:
+		std::vector<std::shared_ptr<CoreInstance>> instances;
+		std::unordered_map<std::string, PhysicalAddressTranslator*> physicalAddressSpaces;
+
+		LIBGAMEEMU_COMMON_DLL_EXPORT u64 addInstanceImpl(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties);
 	protected:
 		Core* core;
-
-		std::vector<std::unique_ptr<CoreInstance>> instances;
 
 		RunState& runState;
 
 		/*
-		 Adds a new core instance and returns the index at which it is stored in the instances vector.
+		 Adds a new child core instance and returns the newly added instance.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT s32 addInstance(Core* core, const std::unordered_map<std::string, PropertyValue>& properties = {});
+		template <class T>
+		T* addInstance(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties = {})
+		{
+			return reinterpret_cast<T*>(instances[addInstanceImpl(dependency, properties)].get());
+		}
+
+		PhysicalAddressTranslator* getAddressSpace(const std::string& name)
+		{
+			if (!physicalAddressSpaces.contains(name)) return nullptr;
+			return physicalAddressSpaces[name];
+		}
 	public:
 		std::atomic<bool> paused;
 
@@ -35,11 +50,33 @@ namespace GameEmu::Common
 			Error
 		};
 
-		inline const std::vector<std::unique_ptr<CoreInstance>>& getInstances()
+		/*
+		 Adds an address space with a name.
+		*/
+		inline void addAddressSpace(PhysicalAddressTranslator& addressSpace, std::string name)
+		{
+			physicalAddressSpaces[name] = &addressSpace;
+		}
+
+		/*
+		 Gets the map of address spaces and names associated with this instance.
+		*/
+		inline const std::unordered_map<std::string, PhysicalAddressTranslator*>& getAddressSpaces()
+		{
+			return physicalAddressSpaces;
+		}
+
+		/*
+		 Gets the child instances associated with this instance.
+		*/
+		inline const std::vector<std::shared_ptr<CoreInstance>>& getInstances()
 		{
 			return instances;
 		}
 
+		/*
+		 Gets the core associated with this instance.
+		*/
 		inline Core* getCore()
 		{
 			return core;
@@ -59,10 +96,9 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus Step();
 
 		/*
-		 Only applies to System cores.
-		 Is called when the System initially starts running.
+		 Is called when the Core initially starts running.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus SystemInit();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ReturnStatus Init();
 
 		/*
 		 Only applies to System cores.
@@ -76,7 +112,7 @@ namespace GameEmu::Common
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreState* getCoreState();
 		
 		/*
-		 Returns this Core Instance's stepping period.
+		 Returns this instances stepping period.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::chrono::nanoseconds getStepPeriod();
 	};

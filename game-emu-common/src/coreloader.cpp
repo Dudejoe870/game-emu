@@ -29,8 +29,6 @@ namespace GameEmu::Common
 			auto GameEmuInitCore = lib.get_function<Core*(CoreLoader*)>("GameEmuInitCore");
 			cores.push_back(GameEmuInitCore(this));
 		}
-
-		for (Core* core : cores) core->LoadDependencies();
 	}
 
 	CoreLoader::~CoreLoader()

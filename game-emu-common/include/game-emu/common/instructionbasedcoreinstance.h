@@ -9,7 +9,7 @@
 
 namespace GameEmu::Common
 {
-	class InstructionBasedCoreInstance : virtual public CoreInstance
+	class InstructionBasedCoreInstance : public CoreInstance
 	{
 	private:
 		InstructionDecoder& decoder;
@@ -42,7 +42,8 @@ namespace GameEmu::Common
 			return result;
 		}
 	public:
-		LIBGAMEEMU_COMMON_DLL_EXPORT InstructionBasedCoreInstance(InstructionDecoder& decoder);
+		LIBGAMEEMU_COMMON_DLL_EXPORT InstructionBasedCoreInstance(Core* core, RunState& runState,
+			const std::unordered_map<std::string, PropertyValue>& properties, InstructionDecoder& decoder);
 
 		/*
 		 Returns a disassembled string with each instruction separated by a new line.

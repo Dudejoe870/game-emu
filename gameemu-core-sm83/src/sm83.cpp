@@ -1,6 +1,6 @@
-#include <game-emu/cores/processor/gbz80.h>
+#include <game-emu/cores/processor/sm83.h>
 
-namespace GameEmu::Cores::Processor::GBZ80
+namespace GameEmu::Cores::Processor::SM83
 {
 	InstructionDecoder::Instruction* InstructionDecoder::getInstruction(const std::vector<u64>& opcodes)
 	{
@@ -63,8 +63,9 @@ namespace GameEmu::Cores::Processor::GBZ80
 	}
 
 	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::CoreInstance(core, runState, properties), Common::InstructionBasedCoreInstance(decoder)
+		: Common::InstructionBasedCoreInstance(core, runState, properties, decoder)
 	{
+		stepPeriod = std::chrono::nanoseconds(1000000000U / static_cast<u64>(std::get<s64>(this->properties["freq"])));
 	}
 
 	Common::CoreInstance::ReturnStatus Instance::Step()
@@ -84,7 +85,7 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 	std::chrono::nanoseconds Instance::getStepPeriod()
 	{
-		return std::chrono::nanoseconds(952); // 1.05 MHz
+		return stepPeriod;
 	}
 
 	Core::Core(Common::CoreLoader* loader)
@@ -94,12 +95,12 @@ namespace GameEmu::Cores::Processor::GBZ80
 
 	std::string Core::getName()
 	{
-		return "gbz80";
+		return "sm83";
 	}
 
 	std::string Core::getDescription()
 	{
-		return "A Core emulating a Gameboy's Z80 microprocessor.";
+		return "A Core emulating a SM83 microprocessor.";
 	}
 
 	Common::Core::Type Core::getType()
@@ -107,8 +108,13 @@ namespace GameEmu::Cores::Processor::GBZ80
 		return Common::Core::Type::Processor;
 	}
 
-	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::unordered_map<std::string, Common::PropertyValue> Core::getDefaultProperties()
 	{
-		return std::make_unique<Instance>(this, runState, properties);
+		return { { "freq", static_cast<s64>(1050000) } };
+	}
+
+	std::shared_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
+	{
+		return std::make_shared<Instance>(this, runState, properties);
 	}
 }

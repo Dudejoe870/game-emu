@@ -182,7 +182,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		}
 
 		std::unordered_map<Common::Core*, u32> duplicateCounts;
-		for (const std::unique_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
+		for (const std::shared_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
 		{
 			Common::InstructionBasedCoreInstance* instructionBasedInstance = dynamic_cast<Common::InstructionBasedCoreInstance*>(instance.get());
 
@@ -197,10 +197,6 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					o << "Name: " << instance->getCore()->getName() << std::endl;
 					o << "Description: " << instance->getCore()->getDescription() << std::endl;
 					o << "Is Instruction Based: " << (instructionBasedInstance ? "Yes" : "No") << std::endl;
-					o << "Dependencies:" << std::endl;
-					if (instance->getCore()->getDependencies().empty()) o << " None" << std::endl;
-					for (Common::Core* core : instance->getCore()->getDependencies())
-						o << " " << core->getName() << std::endl;
 				}, "Display general info about this core.");
 
 			Common::CoreState* coreState = instance->getCoreState();
@@ -295,9 +291,7 @@ int main(int argc, char** argv)
 					coreType = "(System)";
 					break;
 				}
-				std::cout << " " << loadedCore->getName() <<
-					((loadedCore->getType() == Common::Core::Type::System) ? ": " + loadedCore->getDescription() + " " : " ")
-					<< coreType << std::endl;
+				std::cout << " " << loadedCore->getName() << ": " << loadedCore->getDescription() << " " << coreType << std::endl;
 			}
 		}
 		else std::cout << parser;

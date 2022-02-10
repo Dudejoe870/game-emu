@@ -17,8 +17,10 @@ namespace GameEmu::Common
 			if (thread.joinable()) thread.join();
 	}
 
-	void RunLoop::LoopMultithreadedCore(const std::unique_ptr<CoreInstance>& instance, s32 coreIndex)
+	void RunLoop::LoopMultithreadedCore(const std::shared_ptr<CoreInstance>& instance, s32 coreIndex)
 	{
+		instance->Init();
+
 		while (running)
 		{
 			if (paused)
@@ -63,13 +65,12 @@ namespace GameEmu::Common
 					if (!running && thread.joinable()) thread.join();
 			}
 
-			if (systemInstance) delete systemInstance.release();
 			systemInstance = currentSystem->createNewInstance(*this, properties);
 
 			running = true;
 
 			stepPeriod = std::chrono::nanoseconds::zero();
-			for (const std::unique_ptr<CoreInstance>& instance : systemInstance->getInstances())
+			for (const std::shared_ptr<CoreInstance>& instance : systemInstance->getInstances())
 			{
 				if (systemInstance->isMultithreaded())
 				{
@@ -85,7 +86,7 @@ namespace GameEmu::Common
 
 			if (systemInstance->isMultithreaded())
 			{
-				systemReady = true;
+				systemReady = false;
 				runThread = std::thread(&RunLoop::Loop<true>, this);
 			}
 			else

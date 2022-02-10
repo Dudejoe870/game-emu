@@ -8,7 +8,9 @@
 
 #include <game-emu/common/propertyvalue.h>
 
-#include <game-emu/cores/processor/gbz80.h>
+#include <game-emu/cores/processor/sm83.h>
+
+#include <game-emu/common/physicalmemorymap.h>
 
 namespace GameEmu::Cores::System::GB
 {
@@ -17,29 +19,31 @@ namespace GameEmu::Cores::System::GB
 	class Instance : public Common::CoreInstance
 	{
 	private:
-		Core* gbCore;
+		Processor::SM83::Instance* sm83;
 
-		s32 z80;
+		std::vector<u8> bios;
+		Common::PhysicalMemoryMap::Entry* biosEntry;
+
+		std::vector<u8> romBank0;
+		Common::PhysicalMemoryMap::Entry* romBank0Entry;
+
+		Common::BinaryTreeMemoryMap mainMemoryMap;
 	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
-		ReturnStatus SystemInit();
+		ReturnStatus Init();
 	};
 
 	class Core : public Common::Core
 	{
 	public:
-		s32 z80;
-
 		Core(Common::CoreLoader* loader);
-
-		void LoadDependencies();
 
 		std::string getName();
 		Common::Core::Type getType();
 		std::string getDescription();
 		std::unordered_map<std::string, Common::PropertyValue> getDefaultProperties();
 
-		std::unique_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
+		std::shared_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
 	};
 }

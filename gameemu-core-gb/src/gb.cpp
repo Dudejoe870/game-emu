@@ -3,14 +3,23 @@
 namespace GameEmu::Cores::System::GB
 {
 	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::CoreInstance(core, runState, properties)
+		: Common::CoreInstance(core, runState, properties), mainMemoryMap(0xFFFF)
 	{
-		this->gbCore = (Core*)core;
+		this->sm83 = addInstance<Processor::SM83::Instance>(core->getDependency("sm83"), { { "freq", static_cast<s64>(1050000) } }); // 1.05 MHz
 
-		this->z80 = addInstance(this->gbCore->getDependencies()[this->gbCore->z80]);
+		romBank0.resize(0x3FFF+1);
+		bios.resize(0xFF+1);
+
+		// Start with the BIOS mapped over the Cartridge ROM
+		romBank0Entry = mainMemoryMap.Map(romBank0.data()+bios.size(), romBank0.data()+bios.size(), romBank0.size(), 0x0000+bios.size());
+		biosEntry = mainMemoryMap.Map(bios.data(), bios.data(), bios.size(), 0x0000);
+
+		mainMemoryMap.Update();
+
+		sm83->addAddressSpace(mainMemoryMap, "idmem"); // Add the Instruction / Data Memory Map to the SM83 CPU.
 	}
 
-	Common::CoreInstance::ReturnStatus Instance::SystemInit()
+	Common::CoreInstance::ReturnStatus Instance::Init()
 	{
 		return ReturnStatus::Success;
 	}
@@ -18,12 +27,6 @@ namespace GameEmu::Cores::System::GB
 	Core::Core(Common::CoreLoader* loader)
 		: Common::Core(loader)
 	{
-		this->z80 = -1;
-	}
-
-	void Core::LoadDependencies()
-	{
-		this->z80 = addDependency("gbz80");
 	}
 
 	std::string Core::getName()
@@ -46,8 +49,8 @@ namespace GameEmu::Cores::System::GB
 		return Common::Core::Type::System;
 	}
 
-	std::unique_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::shared_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
 	{
-		return std::make_unique<Instance>(this, runState, properties);
+		return std::make_shared<Instance>(this, runState, properties);
 	}
 }
