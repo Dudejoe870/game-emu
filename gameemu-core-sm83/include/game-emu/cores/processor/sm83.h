@@ -15,12 +15,35 @@
 #include <game-emu/common/corestate.h>
 #include <game-emu/common/register.h>
 
+#include <game-emu/common/physicaladdresstranslator.h>
+
 namespace GameEmu::Cores::Processor::SM83
 {
 	class Interpreter
 	{
 	public:
-		static void NOP(Common::CoreState* state, const std::vector<u64>& operands);
+		static void NOP_CYC0(Common::CoreState* state, const std::vector<u64>& operands);
+	};
+
+	class InstructionStream : public Common::InstructionStream
+	{
+	private:
+		u16 offset;
+		Common::PhysicalAddressTranslator* memory;
+		u16 PC;
+	public:
+		InstructionStream(u16 PC, Common::PhysicalAddressTranslator* memory)
+		{
+			this->PC = PC;
+			this->offset = 0;
+			this->memory = memory;
+		}
+
+		bool getNext(u64& value)
+		{
+			value = memory->Read<u8, std::endian::native>(PC + offset++);
+			return true;
+		}
 	};
 
 	class InstructionDecoder : public Common::InstructionDecoder
@@ -28,7 +51,7 @@ namespace GameEmu::Cores::Processor::SM83
 	private:
 		std::vector<Instruction> instructions =
 		{
-			Instruction("nop", 1, Interpreter::NOP) // 0x00
+			Instruction("nop", 1, { Interpreter::NOP_CYC0 }) // 0x00
 		};
 
 		std::vector<Instruction> CBInstructions =
@@ -130,6 +153,10 @@ namespace GameEmu::Cores::Processor::SM83
 
 		Common::Register<u16, std::endian::native, false> PC;
 
+		Common::PhysicalAddressTranslator* idmem;
+
+		u8 mCycles; // The amount of Machine Cycles took up by the last instruction.
+
 		State()
 			: AF(this, registerState.AF, registerState.AF, "AF", true, "{name}: 0x{u16:04x}"),
 			BC(this, registerState.BC, registerState.BC, "BC", true, "{name}: 0x{u16:04x}"),
@@ -145,6 +172,8 @@ namespace GameEmu::Cores::Processor::SM83
 			L(this, registerState.L, registerState.L, "L", false),
 			PC(this, registerState.PC, registerState.PC, "PC", true, "{name}: 0x{u16:04x}")
 		{
+			this->idmem = nullptr;
+			mCycles = 0;
 		}
 	};
 
@@ -154,11 +183,21 @@ namespace GameEmu::Cores::Processor::SM83
 		InstructionDecoder decoder;
 
 		State state;
+		u8 cycleCounter;
+
+		InstructionDecoder::DecodeInfo decodeInfo;
+
+		inline void Fetch()
+		{
+			InstructionStream stream(state.PC, state.idmem);
+			decodeInfo = decoder.Decode(stream);
+		}
 
 		std::chrono::nanoseconds stepPeriod;
 	public:
 		Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties);
 
+		ReturnStatus Init();
 		ReturnStatus Step();
 
 		std::string Disassemble(const std::vector<u8>& data);

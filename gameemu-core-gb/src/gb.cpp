@@ -15,8 +15,10 @@ namespace GameEmu::Cores::System::GB
 		biosEntry = mainMemoryMap.Map(bios.data(), bios.data(), bios.size(), 0x0000);
 
 		mainMemoryMap.Update();
+		runState.logger->LogInfo("GB initialized memory map.");
 
 		sm83->addAddressSpace(mainMemoryMap, "idmem"); // Add the Instruction / Data Memory Map to the SM83 CPU.
+		runState.logger->LogInfo("GB added SM83 address space.");
 	}
 
 	Common::CoreInstance::ReturnStatus Instance::Init()

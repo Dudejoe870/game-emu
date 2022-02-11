@@ -104,6 +104,8 @@ namespace GameEmu::Common
 	/*
 	 A Physical Memory Map implementation
 	 with an internal Binary Search Tree allowing for better performance than linear searches.
+
+	 Should be the default go-to for Memory Mapping unless the specific system benefits from a separate approach.
 	*/
 	class BinaryTreeMemoryMap : public PhysicalMemoryMap
 	{
@@ -166,40 +168,49 @@ namespace GameEmu::Common
 		void WriteImpl(u64 value, u64 address)
 		{
 			address &= addressMask;
-			Entry& entry = findNode(address)->data;
+
+			std::shared_ptr<BinaryTree::Node> node = findNode(address);
+			if (!node) return;
+			Entry& entry = node->data;
 
 			u64 offset = address - entry.address;
 			if (offset + (sizeof(T) - 1) >= entry.size) return;
-			T* pReadValue = reinterpret_cast<T*>(&entry.hostReadMemory[offset]);
 			T* pWriteValue = reinterpret_cast<T*>(&entry.hostWriteMemory[offset]);
 
 			if (entry.writeEvent)
+			{
+				T* pReadValue = reinterpret_cast<T*>(&entry.hostReadMemory[offset]);
 				*pWriteValue = Util::ToNativeEndian<endian>(static_cast<T>(
 					entry.writeEvent(
 						static_cast<u64>(Util::ToNativeEndian<endian>(*pReadValue)),
 						static_cast<u64>(Util::ToNativeEndian<endian>(*pWriteValue)),
 						value, address, sizeof(T))));
-			else
-				*pWriteValue = Util::ToNativeEndian<endian>(static_cast<T>(value));
+			}
+			else *pWriteValue = Util::ToNativeEndian<endian>(static_cast<T>(value));
 		}
 
 		template <class T, std::endian endian>
 		u64 ReadImpl(u64 address)
 		{
 			address &= addressMask;
-			Entry& entry = findNode(address)->data;
+
+			std::shared_ptr<BinaryTree::Node> node = findNode(address);
+			if (!node) return 0;
+			Entry& entry = node->data;
 
 			u64 offset = address - entry.address;
 			if (offset + (sizeof(T) - 1) >= entry.size) return 0;
 			T* pReadValue = reinterpret_cast<T*>(&entry.hostReadMemory[offset]);
-			T* pWriteValue = reinterpret_cast<T*>(&entry.hostWriteMemory[offset]);
 
 			if (entry.readEvent)
+			{
+				T* pWriteValue = reinterpret_cast<T*>(&entry.hostWriteMemory[offset]);
 				return Util::ToNativeEndian<endian>(static_cast<T>(
 					entry.readEvent(
 						static_cast<u64>(Util::ToNativeEndian<endian>(*pReadValue)),
 						static_cast<u64>(Util::ToNativeEndian<endian>(*pWriteValue)),
 						address, sizeof(T))));
+			}
 			return Util::ToNativeEndian<endian>(*pReadValue);
 		}
 	protected:

@@ -28,20 +28,20 @@ namespace GameEmu::Common
 			*/
 			u8 length;
 
-			using interpreterFunction = std::function<void(CoreState* state, const std::vector<u64>& operands)>;
-			interpreterFunction interpStep;
+			using InterpreterFunction = std::function<void(CoreState* state, const std::vector<u64>& operands)>;
+			std::vector<InterpreterFunction> interpFunctions;
 
 			Instruction()
 			{
 				this->set = false;
 			}
 
-			Instruction(std::string assemblyFormat, unsigned char length, interpreterFunction interpStep)
+			Instruction(std::string assemblyFormat, unsigned char length, const std::vector<InterpreterFunction>& interpFunctions)
 			{
 				this->assemblyFormat = assemblyFormat;
 				this->length = length;
 				this->set = true;
-				this->interpStep = interpStep;
+				this->interpFunctions = interpFunctions;
 			}
 		};
 

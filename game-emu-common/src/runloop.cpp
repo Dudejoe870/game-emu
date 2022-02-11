@@ -44,7 +44,8 @@ namespace GameEmu::Common
 			coreMutexes[coreIndex]->lock();
 			auto startTime = std::chrono::steady_clock::now();
 
-			instance->Step();
+			if (instance->Step() != CoreInstance::ReturnStatus::Success)
+				Pause();
 
 			coreMutexes[coreIndex]->unlock();
 			auto endTime = std::chrono::steady_clock::now();
@@ -53,7 +54,7 @@ namespace GameEmu::Common
 		}
 	}
 
-	void RunLoop::Start(std::unordered_map<std::string, PropertyValue> properties)
+	void RunLoop::Start()
 	{
 		if (currentSystem)
 		{
@@ -64,8 +65,6 @@ namespace GameEmu::Common
 				for (std::thread& thread : coreThreads)
 					if (!running && thread.joinable()) thread.join();
 			}
-
-			systemInstance = currentSystem->createNewInstance(*this, properties);
 
 			running = true;
 
@@ -84,6 +83,8 @@ namespace GameEmu::Common
 				if (instancePeriod < stepPeriod || stepPeriod == std::chrono::nanoseconds::zero()) stepPeriod = instancePeriod;
 			}
 
+			logger->LogInfo(fmt::format("RunLoop starting system {}...", currentSystem->getName()));
+
 			if (systemInstance->isMultithreaded())
 			{
 				systemReady = false;
@@ -97,10 +98,11 @@ namespace GameEmu::Common
 		}
 	}
 
-	void RunLoop::setSystemCore(Core* core)
+	void RunLoop::setSystemCore(Core* core, std::unordered_map<std::string, PropertyValue> properties)
 	{
 		if (core->getType() != Core::Type::System) throw std::runtime_error("setSystemCore: Core isn't of a System type!");
 		this->currentSystem = core;
+		systemInstance = currentSystem->createNewInstance(*this, properties);
 	}
 
 	bool RunLoop::isRunning()

@@ -27,6 +27,7 @@
 #include <game-emu/common/instructionbasedcoreinstance.h>
 
 #include <game-emu/common/runloop.h>
+#include <game-emu/common/logger.h>
 
 #include <args.hxx>
 
@@ -35,6 +36,32 @@
 #include <cli/clilocalsession.h>
 
 using namespace GameEmu;
+
+class CLILogger : public Common::Logger 
+{
+private:
+	cli::Scheduler& sched;
+protected:
+	void LogInfoImpl(std::string info)
+	{
+		sched.Post([info]() { cli::Cli::cout() << "Info: " << info << std::endl; });
+	}
+
+	void LogWarningImpl(std::string warning)
+	{
+		sched.Post([warning]() { cli::Cli::cout() << "Warning: " << warning << std::endl; });
+	}
+
+	void LogErrorImpl(std::string error)
+	{
+		sched.Post([error]() { cli::Cli::cout() << "Error: " << error << std::endl; });
+	}
+public:
+	CLILogger(cli::Scheduler& sched)
+		: sched(sched)
+	{
+	}
+};
 
 void ParseCore(const std::string& progName, Common::Core* core, std::vector<std::string>::const_iterator beginArgs, std::vector<std::string>::const_iterator endArgs)
 {
@@ -133,13 +160,18 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		return;
 	}
 
+	cli::LoopScheduler sched;
+	CLILogger logger(sched);
+
+	Common::RunLoop loop;
+	bool useRunLoop = false;
+
 	if (beginArgs != endArgs)
 	{
-		Common::RunLoop loop;
-		loop.setSystemCore(core);
+		useRunLoop = true;
 
-		if (pauseOnStart) loop.Pause();
-		loop.Start(propertyOverrides);
+		loop.logger = &logger;
+		loop.setSystemCore(core, propertyOverrides);
 
 		cli::SetColor();
 
@@ -219,7 +251,6 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 
 		cli::Cli cli(std::move(rootMenu));
 
-		cli::LoopScheduler sched;
 		cli::CliLocalTerminalSession session(cli, sched, std::cout);
 
 		session.ExitAction([&](std::ostream& o) 
@@ -228,6 +259,12 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 			sched.Stop();
 			o << "Goodbye..." << std::endl; 
 		});
+
+		if (useRunLoop)
+		{
+			if (pauseOnStart) loop.Pause();
+			loop.Start();
+		}
 
 		sched.Run();
 	}

@@ -101,7 +101,11 @@ namespace GameEmu::Common
 						const std::shared_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
 						if (!instance->paused)
 						{
-							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep) instance->Step();
+							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep)
+							{
+								if (instance->Step() != CoreInstance::ReturnStatus::Success)
+									Pause();
+							}
 							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instance->getStepPeriod();
 						}
 					}
@@ -152,12 +156,12 @@ namespace GameEmu::Common
 		/*
 		 Starts the main system thread and runs the current system core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Start(std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT void Start();
 
 		/*
  		 Sets the system core to be run after calling Start.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void setSystemCore(Core* systemCore);
+		LIBGAMEEMU_COMMON_DLL_EXPORT void setSystemCore(Core* systemCore, std::unordered_map<std::string, PropertyValue> properties = {});
 
 		/*
 		 Stops the current loop.

@@ -47,7 +47,9 @@ namespace GameEmu::Common
 		enum class ReturnStatus
 		{
 			Success,
-			Error
+			Error,
+
+			UnknownInstruction
 		};
 
 		/*

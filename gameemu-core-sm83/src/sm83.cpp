@@ -49,9 +49,9 @@ namespace GameEmu::Cores::Processor::SM83
 		}
 
 		info.instruction = getInstruction(info.opcodes);
-		if (!info.instruction) return DecodeInfo();
+		if (!info.instruction) return info;
 
-		u32 operands = info.instruction->length - (u32)info.opcodes.size();
+		u32 operands = info.instruction->length - static_cast<u32>(info.opcodes.size());
 		for (u32 i = 0; i < operands; ++i)
 		{
 			u64 operand = 0;
@@ -66,10 +66,53 @@ namespace GameEmu::Cores::Processor::SM83
 		: Common::InstructionBasedCoreInstance(core, runState, properties, decoder)
 	{
 		stepPeriod = std::chrono::nanoseconds(1000000000U / static_cast<u64>(std::get<s64>(this->properties["freq"])));
+		cycleCounter = 0;
+
+		runState.logger->LogInfo(fmt::format("SM83 initialized with frequency {}hz.", 
+			static_cast<u64>(std::get<s64>(this->properties["freq"]))));
+	}
+
+	Common::CoreInstance::ReturnStatus Instance::Init()
+	{
+		state.idmem = getAddressSpace("idmem");
+
+		Fetch();
+		return ReturnStatus::Success;
 	}
 
 	Common::CoreInstance::ReturnStatus Instance::Step()
 	{
+		if (cycleCounter >= state.mCycles) cycleCounter = 0;
+
+		if (!decodeInfo.instruction)
+		{
+			if (!decodeInfo.opcodes.empty())
+			{
+				if (decodeInfo.opcodes.size() <= 1)
+					runState.logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}",
+						static_cast<u8>(decodeInfo.opcodes[0])));
+				else
+					runState.logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}{:02x}",
+						static_cast<u8>(decodeInfo.opcodes[0]),
+						static_cast<u8>(decodeInfo.opcodes[1])));
+			}
+			return ReturnStatus::UnknownInstruction;
+		}
+
+		// Execute the Instruction
+		if (cycleCounter < decodeInfo.instruction->interpFunctions.size())
+			decodeInfo.instruction->interpFunctions[cycleCounter](&state, decodeInfo.operands);
+
+		// Fetch the next instruction on the same Cycle as execution if there's only one cycle.
+		if (state.mCycles == 1) Fetch();
+		else if (cycleCounter < state.mCycles)
+		{
+			// Fetch the next instruction if this is the last Cycle before the next execution.
+			if (cycleCounter == state.mCycles - 1) Fetch();
+		}
+
+		++cycleCounter;
+
 		return ReturnStatus::Success;
 	}
 

@@ -33,7 +33,7 @@ namespace GameEmu::Common
 
 	CoreInstance::ReturnStatus CoreInstance::Init()
 	{
-		return ReturnStatus::Error;
+		return ReturnStatus::Success;
 	}
 
 	bool CoreInstance::isMultithreaded()
