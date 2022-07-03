@@ -9,9 +9,9 @@ A cross-platform multi-system emulator / library
 
 | Folder              | Description                                                                                                                                                        |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| game-emu-cli        | A CLI UI for loading, running, and debugging game-emu cores with a runtime debugging CLI.                                                                          |
+| gameemu-cli        | A CLI UI for loading, running, and debugging game-emu cores with a runtime debugging CLI.                                                                          |
 | gameemu-core-*      | A game-emu core that is linked as a dynamic library, then loaded at runtime, invoked using a common API.                                                           |
-| game-emu-common     | The main folder of the project, this is the main library that all cores and UIs are built off of. Contains general utilities for making creating Emulators easier. |
+| gameemu-common     | The main folder of the project, this is the main library that all cores and UIs are built off of. Contains general utilities for making creating Emulators easier. |
 
 # Cores
 
@@ -100,7 +100,7 @@ sudo ldconfig
 
 You can specify an install prefix if you don't want to install it to the normal directory (usually /usr/local (make sure it's in your /etc/ld.so.conf!))
 
-Once it's in your path you can now use ```game-emu-cli``` to run the software.
+Once it's in your path you can now use ```gameemu-cli``` to run the software.
 > Note: If you specified a custom install prefix, 
 your LD_LIBRARY_PATH variable will have to 
 include the lib subdirectory in the install path. 

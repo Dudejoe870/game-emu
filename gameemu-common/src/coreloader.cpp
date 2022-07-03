@@ -8,7 +8,7 @@ namespace GameEmu::Common
 {
 	CoreLoader::CoreLoader(std::filesystem::path coreSubdirectory)
 	{
-		const std::filesystem::path coresLoadPath = Util::getExecutablePath().parent_path() / coreSubdirectory;
+		const std::filesystem::path coresLoadPath = Util::GetExecutablePath().parent_path() / coreSubdirectory;
 
 		if (std::filesystem::exists(coresLoadPath))
 		{
@@ -31,22 +31,23 @@ namespace GameEmu::Common
 		}
 	}
 
-	CoreLoader::~CoreLoader()
+	CoreLoader::~CoreLoader() 
 	{
-		for (Core* core : cores) delete core;
+		for (Core* core : cores)
+			delete core;
 		cores.clear();
 	}
 
-	const std::vector<Core*>& CoreLoader::getLoadedCores()
+	const std::vector<Core*>& CoreLoader::GetLoadedCores()
 	{
 		return cores;
 	}
 
-	Core* CoreLoader::getLoadedCore(std::string name)
+	Core* CoreLoader::GetLoadedCore(std::string name)
 	{
 		for (Core* core : cores)
 		{
-			if (core->getName() == name)
+			if (core->GetName() == name)
 				return core;
 		}
 		return nullptr;

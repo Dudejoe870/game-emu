@@ -68,7 +68,7 @@ namespace GameEmu::Common
 		 Given the opcode(s), get a pointer to the instruction information (probably stored in a list that is indexed by the opcodes in some way)
 		 Should return nullptr if the instruction is invalid (doesn't exist or the "set" boolean is false)
 		*/
-		virtual Instruction* getInstruction(const std::vector<u64>& opcodes) = 0;
+		virtual Instruction* GetInstruction(const std::vector<u64>& opcodes) = 0;
 
 		/*
 		 Given a decoded instruction, using the instructions stored assembly format, return the formatted assembly instruction (for debugging purposes)

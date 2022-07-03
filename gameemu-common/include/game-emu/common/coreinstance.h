@@ -20,8 +20,9 @@ namespace GameEmu::Common
 	private:
 		std::vector<std::shared_ptr<CoreInstance>> instances;
 		std::unordered_map<std::string, PhysicalAddressTranslator*> physicalAddressSpaces;
-
-		LIBGAMEEMU_COMMON_DLL_EXPORT u64 addInstanceImpl(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties);
+		
+		LIBGAMEEMU_COMMON_DLL_EXPORT u64 AddInstanceImpl(Core* dependency, 
+			const std::unordered_map<std::string, PropertyValue>& properties);
 	protected:
 		Core* core;
 
@@ -31,12 +32,12 @@ namespace GameEmu::Common
 		 Adds a new child core instance and returns the newly added instance.
 		*/
 		template <class T>
-		T* addInstance(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties = {})
+		T* AddInstance(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties = {})
 		{
-			return reinterpret_cast<T*>(instances[addInstanceImpl(dependency, properties)].get());
+			return reinterpret_cast<T*>(instances[AddInstanceImpl(dependency, properties)].get());
 		}
 
-		PhysicalAddressTranslator* getAddressSpace(const std::string& name)
+		PhysicalAddressTranslator* GetAddressSpace(const std::string& name)
 		{
 			if (!physicalAddressSpaces.contains(name)) return nullptr;
 			return physicalAddressSpaces[name];
@@ -55,7 +56,7 @@ namespace GameEmu::Common
 		/*
 		 Adds an address space with a name.
 		*/
-		inline void addAddressSpace(PhysicalAddressTranslator& addressSpace, std::string name)
+		inline void AddAddressSpace(PhysicalAddressTranslator& addressSpace, std::string name)
 		{
 			physicalAddressSpaces[name] = &addressSpace;
 		}
@@ -63,7 +64,7 @@ namespace GameEmu::Common
 		/*
 		 Gets the map of address spaces and names associated with this instance.
 		*/
-		inline const std::unordered_map<std::string, PhysicalAddressTranslator*>& getAddressSpaces()
+		inline const std::unordered_map<std::string, PhysicalAddressTranslator*>& GetAddressSpaces()
 		{
 			return physicalAddressSpaces;
 		}
@@ -71,7 +72,7 @@ namespace GameEmu::Common
 		/*
 		 Gets the child instances associated with this instance.
 		*/
-		inline const std::vector<std::shared_ptr<CoreInstance>>& getInstances()
+		inline const std::vector<std::shared_ptr<CoreInstance>>& GetInstances()
 		{
 			return instances;
 		}
@@ -79,7 +80,7 @@ namespace GameEmu::Common
 		/*
 		 Gets the core associated with this instance.
 		*/
-		inline Core* getCore()
+		inline Core* GetCore()
 		{
 			return core;
 		}
@@ -106,16 +107,16 @@ namespace GameEmu::Common
 		 Only applies to System cores.
 		 Returns whether or not the RunLoop should create a new thread for each Core instance loaded in this Core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual bool isMultithreaded();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual bool IsMultithreaded();
 
 		/*
 		 Returns a pointer to this instances Core State.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreState* getCoreState();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual CoreState* GetCoreState();
 		
 		/*
 		 Returns this instances stepping period.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::chrono::nanoseconds getStepPeriod();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::chrono::nanoseconds GetStepPeriod();
 	};
 }

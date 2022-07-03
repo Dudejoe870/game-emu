@@ -1,7 +1,9 @@
 #pragma once
 
+#ifdef _WIN32
 // The Windows headers define min and max macros for some reason??? Really stupid choice as they collide with std::min and std::max.
 #define NOMINMAX
+#endif
 
 #include <cstdlib>
 #include <cstdio>

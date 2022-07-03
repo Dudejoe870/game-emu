@@ -20,13 +20,29 @@ namespace GameEmu::Common
 		std::mutex threadMutex;
 		std::thread runThread;
 
-		// Multithreading
-		std::vector<std::thread> coreThreads;
-		std::vector<std::unique_ptr<std::mutex>> coreMutexes;
-
 		// Synchronization for Multithreading, to insure that the System doesn't start until all the Cores have started, coming out of a pause.
 		std::atomic<bool> systemReady;
-		std::vector<std::unique_ptr<std::atomic<bool>>> coresReady;
+
+		struct CoreInfo
+		{
+			std::thread thread;
+			std::mutex mutex;
+			std::atomic<bool> ready;
+
+			CoreInfo(std::thread&& thread)
+			{
+				this->thread.swap(thread);
+			}
+
+			CoreInfo(const CoreInfo& other)
+			{
+				CoreInfo& otherRef = const_cast<CoreInfo&>(other);
+				thread.swap(otherRef.thread);
+
+				ready.store(other.ready.load());
+			}
+		};
+		std::vector<CoreInfo> cores;
 
 		// The running and paused variables.
 		std::atomic<bool> running;
@@ -62,7 +78,7 @@ namespace GameEmu::Common
 			systemInstance->Init();
 			if constexpr (!multithreaded)
 			{
-				for (const std::shared_ptr<CoreInstance>& instance : systemInstance->getInstances())
+				for (const std::shared_ptr<CoreInstance>& instance : systemInstance->GetInstances())
 					instance->Init();
 			}
 
@@ -80,10 +96,10 @@ namespace GameEmu::Common
 					if (!systemReady)
 					{
 						bool allCoresReady = true;
-						for (std::unique_ptr<std::atomic<bool>>& coreReady : coresReady)
+						for (CoreInfo& core : cores)
 						{
-							allCoresReady &= *coreReady;
-							if (!*coreReady) break;
+							allCoresReady &= core.ready;
+							if (!core.ready) break;
 						}
 
 						if (!allCoresReady) continue;
@@ -96,9 +112,9 @@ namespace GameEmu::Common
 
 				if constexpr (!multithreaded)
 				{
-					for (u32 i = 0; i < systemInstance->getInstances().size(); ++i)
+					for (u32 i = 0; i < systemInstance->GetInstances().size(); ++i)
 					{
-						const std::shared_ptr<CoreInstance>& instance = systemInstance->getInstances()[i];
+						const std::shared_ptr<CoreInstance>& instance = systemInstance->GetInstances()[i];
 						if (!instance->paused)
 						{
 							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep)
@@ -106,7 +122,7 @@ namespace GameEmu::Common
 								if (instance->Step() != CoreInstance::ReturnStatus::Success)
 									Pause();
 							}
-							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instance->getStepPeriod();
+							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instance->GetStepPeriod();
 						}
 					}
 				}
@@ -151,17 +167,19 @@ namespace GameEmu::Common
 		std::shared_ptr<CoreInstance> systemInstance;
 
 		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop();
+		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop(Logger& logger, Core* system);
+
 		LIBGAMEEMU_COMMON_DLL_EXPORT ~RunLoop();
 
 		/*
 		 Starts the main system thread and runs the current system core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Start();
+		LIBGAMEEMU_COMMON_DLL_EXPORT void Start(std::unordered_map<std::string, PropertyValue> properties = {});
 
 		/*
  		 Sets the system core to be run after calling Start.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void setSystemCore(Core* systemCore, std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT void SetSystemCore(Core* systemCore);
 
 		/*
 		 Stops the current loop.
@@ -190,12 +208,12 @@ namespace GameEmu::Common
 		/*
 		 Returns whether or not the current System Core is paused.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT bool isPaused();
+		LIBGAMEEMU_COMMON_DLL_EXPORT bool IsPaused();
 
 		/*
 		 Returns whether or not the current System Core is running.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT bool isRunning();
+		LIBGAMEEMU_COMMON_DLL_EXPORT bool IsRunning();
 
 		/*
 		 This acquires the thread mutex basically stopping any Cores from running while the caller accesses any current Core states.
@@ -204,7 +222,7 @@ namespace GameEmu::Common
 		inline void AcquireLock()
 		{
 			threadMutex.lock();
-			for (std::unique_ptr<std::mutex>& mutex : coreMutexes) mutex->lock();
+			for (CoreInfo& core : cores) core.mutex.lock();
 		}
 
 		/*
@@ -213,7 +231,7 @@ namespace GameEmu::Common
 		inline void Unlock()
 		{
 			threadMutex.unlock();
-			for (std::unique_ptr<std::mutex>& mutex : coreMutexes) mutex->unlock();
+			for (CoreInfo& core : cores) core.mutex.unlock();
 		}
 	};
 }

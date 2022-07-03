@@ -11,7 +11,7 @@ namespace GameEmu::Common
 		this->core = core;
 		this->paused = false;
 
-		this->properties = core->getDefaultProperties();
+		this->properties = core->GetDefaultProperties();
 
 		this->properties.insert(properties.begin(), properties.end());
 	}
@@ -20,9 +20,9 @@ namespace GameEmu::Common
 	{
 	}
 
-	u64 CoreInstance::addInstanceImpl(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties)
+	u64 CoreInstance::AddInstanceImpl(Core* dependency, const std::unordered_map<std::string, PropertyValue>& properties)
 	{
-		instances.push_back(dependency->createNewInstance(runState, properties));
+		instances.push_back(dependency->CreateNewInstance(runState, properties));
 		return instances.size() - 1;
 	}
 
@@ -36,17 +36,17 @@ namespace GameEmu::Common
 		return ReturnStatus::Success;
 	}
 
-	bool CoreInstance::isMultithreaded()
+	bool CoreInstance::IsMultithreaded()
 	{
 		return false;
 	}
 
-	CoreState* CoreInstance::getCoreState()
+	CoreState* CoreInstance::GetCoreState()
 	{
 		return nullptr;
 	}
 
-	std::chrono::nanoseconds CoreInstance::getStepPeriod()
+	std::chrono::nanoseconds CoreInstance::GetStepPeriod()
 	{
 		return std::chrono::nanoseconds::zero();
 	}

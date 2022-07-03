@@ -20,20 +20,16 @@ namespace GameEmu::Common
 		 Note: There is no guaranty of load order.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT CoreLoader(std::filesystem::path coreSubdirectory);
-
-		/*
-		 Frees all DLL system cores from memory.
-		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT ~CoreLoader();
 
 		/*
 		 Get all the currently loaded cores.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT const std::vector<Core*>& getLoadedCores();
+		LIBGAMEEMU_COMMON_DLL_EXPORT const std::vector<Core*>& GetLoadedCores();
 
 		/*
 		 Get a currently loaded core with the specified name.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT Core* getLoadedCore(std::string name);
+		LIBGAMEEMU_COMMON_DLL_EXPORT Core* GetLoadedCore(std::string name);
 	};
 }

@@ -7,6 +7,6 @@ namespace GameEmu::Common
 {
 	namespace Util
 	{
-		LIBGAMEEMU_COMMON_DLL_EXPORT std::filesystem::path getExecutablePath();
+		LIBGAMEEMU_COMMON_DLL_EXPORT std::filesystem::path GetExecutablePath();
 	}
 }

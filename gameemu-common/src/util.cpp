@@ -12,7 +12,7 @@
 
 namespace GameEmu::Common
 {
-	std::filesystem::path Util::getExecutablePath()
+	std::filesystem::path Util::GetExecutablePath()
 	{
 #if defined(_WIN32) || defined(__CYGWIN__)
 		wchar_t path[MAX_PATH] = { 0 };
@@ -25,7 +25,7 @@ namespace GameEmu::Common
 #endif
 	}
 
-	Util::PropertyValueType Util::getPropertyValueType(const PropertyValue& value)
+	Util::PropertyValueType Util::GetPropertyValueType(const PropertyValue& value)
 	{
 		if (std::holds_alternative<s32>(value))
 			return PropertyValueType::Integer32;
@@ -47,7 +47,7 @@ namespace GameEmu::Common
 		return PropertyValueType::Unknown;
 	}
 
-	std::string Util::getPropertyValueTypeDisplayName(PropertyValueType type)
+	std::string Util::GetPropertyValueTypeDisplayName(PropertyValueType type)
 	{
 		switch (type)
 		{

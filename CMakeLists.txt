@@ -63,8 +63,8 @@ add_subdirectory ("fmt" EXCLUDE_FROM_ALL)
 configure_file("uninstall.cmake" "uninstall.cmake" NO_SOURCE_PERMISSIONS @ONLY)
 install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -P \"${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake\")")
 
-add_subdirectory ("game-emu-common")
-add_subdirectory ("game-emu-cli")
+add_subdirectory ("gameemu-common")
+add_subdirectory ("gameemu-cli")
 
 function(add_core_dep CORE)
     list(FIND GAME_EMU_CORE_LIST ${CORE} CORE_INDEX)

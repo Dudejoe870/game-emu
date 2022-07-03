@@ -21,7 +21,7 @@ namespace GameEmu::Common
 			Unknown
 		};
 
-		LIBGAMEEMU_COMMON_DLL_EXPORT PropertyValueType getPropertyValueType(const PropertyValue& value);
-		LIBGAMEEMU_COMMON_DLL_EXPORT std::string getPropertyValueTypeDisplayName(PropertyValueType type);
+		LIBGAMEEMU_COMMON_DLL_EXPORT PropertyValueType GetPropertyValueType(const PropertyValue& value);
+		LIBGAMEEMU_COMMON_DLL_EXPORT std::string GetPropertyValueTypeDisplayName(PropertyValueType type);
 	}
 }

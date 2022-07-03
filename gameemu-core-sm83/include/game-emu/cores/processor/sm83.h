@@ -39,7 +39,7 @@ namespace GameEmu::Cores::Processor::SM83
 			this->memory = memory;
 		}
 
-		bool getNext(u64& value)
+		bool GetNext(u64& value)
 		{
 			value = memory->Read<u8, std::endian::native>(PC + offset++);
 			return true;
@@ -59,7 +59,7 @@ namespace GameEmu::Cores::Processor::SM83
 
 		};
 	public:
-		Instruction* getInstruction(const std::vector<u64>& opcodes);
+		Instruction* GetInstruction(const std::vector<u64>& opcodes);
 		std::string Disassemble(const DecodeInfo& info);
 		DecodeInfo Decode(Common::InstructionStream& stream);
 	};
@@ -69,12 +69,13 @@ namespace GameEmu::Cores::Processor::SM83
 	public:
 		Core(Common::CoreLoader* loader);
 
-		std::string getName();
-		std::string getDescription();
-		Common::Core::Type getType();
-		std::unordered_map<std::string, Common::PropertyValue> getDefaultProperties();
-
-		std::shared_ptr<Common::CoreInstance> createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
+		std::string GetName();
+		std::string GetDescription();
+		Common::Core::Type GetType();
+		std::unordered_map<std::string, Common::PropertyValue> GetDefaultProperties();
+		
+		std::shared_ptr<Common::CoreInstance> CreateNewInstance(
+			Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties = {});
 	};
 
 	class State : public Common::CoreState
@@ -201,7 +202,7 @@ namespace GameEmu::Cores::Processor::SM83
 		ReturnStatus Step();
 
 		std::string Disassemble(const std::vector<u8>& data);
-		Common::CoreState* getCoreState();
-		std::chrono::nanoseconds getStepPeriod();
+		Common::CoreState* GetCoreState();
+		std::chrono::nanoseconds GetStepPeriod();
 	};
 }

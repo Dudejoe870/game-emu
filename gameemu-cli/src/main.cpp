@@ -42,17 +42,17 @@ class CLILogger : public Common::Logger
 private:
 	cli::Scheduler& sched;
 protected:
-	void LogInfoImpl(std::string info)
+	void LogInfoImpl(const std::string& info)
 	{
 		sched.Post([info]() { cli::Cli::cout() << "Info: " << info << std::endl; });
 	}
 
-	void LogWarningImpl(std::string warning)
+	void LogWarningImpl(const std::string& warning)
 	{
 		sched.Post([warning]() { cli::Cli::cout() << "Warning: " << warning << std::endl; });
 	}
 
-	void LogErrorImpl(std::string error)
+	void LogErrorImpl(const std::string& error)
 	{
 		sched.Post([error]() { cli::Cli::cout() << "Error: " << error << std::endl; });
 	}
@@ -65,13 +65,13 @@ public:
 
 void ParseCore(const std::string& progName, Common::Core* core, std::vector<std::string>::const_iterator beginArgs, std::vector<std::string>::const_iterator endArgs)
 {
-	std::unordered_map<std::string, Common::PropertyValue> defaultProperties = core->getDefaultProperties();
+	std::unordered_map<std::string, Common::PropertyValue> defaultProperties = core->GetDefaultProperties();
 
 	std::unordered_map<std::string, Common::PropertyValue> propertyOverrides;
 	propertyOverrides.insert(defaultProperties.begin(), defaultProperties.end());
 
-	args::ArgumentParser parser(core->getDescription());
-	parser.Prog(progName + " " + core->getName());
+	args::ArgumentParser parser(core->GetDescription());
+	parser.Prog(progName + " " + core->GetName());
 	args::HelpFlag help(parser, "help", "Display this help menu", { 'h', "help" });
 
 	args::Flag pauseOnStart(parser, "pause-on-start", "Pauses the system core as soon as it starts.", { 'p', "pause-on-start" });
@@ -85,7 +85,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		propertyFlags[kv.first] = std::make_unique<args::ValueFlag<std::string>>(
 			propertiesGroup,
 			kv.first, 
-			"(" + Common::Util::getPropertyValueTypeDisplayName(Common::Util::getPropertyValueType(kv.second)) + ")",
+			"(" + Common::Util::GetPropertyValueTypeDisplayName(Common::Util::GetPropertyValueType(kv.second)) + ")",
 			args::Matcher { kv.first });
 	}
 
@@ -98,7 +98,7 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		{
 			std::unique_ptr<args::ValueFlag<std::string>>& flag = kv.second;
 			Common::PropertyValue& value = propertyOverrides[kv.first];
-			Common::Util::PropertyValueType type = Common::Util::getPropertyValueType(value);
+			Common::Util::PropertyValueType type = Common::Util::GetPropertyValueType(value);
 			if (*flag.get())
 			{
 				try 
@@ -160,45 +160,42 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 		return;
 	}
 
-	cli::LoopScheduler sched;
-	CLILogger logger(sched);
-
-	Common::RunLoop loop;
-	bool useRunLoop = false;
-
 	if (beginArgs != endArgs)
 	{
-		useRunLoop = true;
+		cli::LoopScheduler sched;
+		CLILogger logger(sched);
 
-		loop.logger = &logger;
-		loop.setSystemCore(core, propertyOverrides);
+		Common::RunLoop loop(logger, core);
+
+		if (pauseOnStart) loop.Pause();
+		loop.Start(propertyOverrides);
 
 		cli::SetColor();
 
-		auto rootMenu = std::make_unique<cli::Menu>(core->getName());
+		std::unique_ptr<cli::Menu> rootMenu = std::make_unique<cli::Menu>(core->GetName());
 
 		rootMenu->Insert("resume",
 			[&](std::ostream& o)
 			{
-				o << "Resuming " << core->getName() << "..." << std::endl;
+				o << "Resuming " << core->GetName() << "..." << std::endl;
 				loop.Resume();
 			}, "Starts the core.");
 		rootMenu->Insert("pause",
 			[&](std::ostream& o)
 			{
-				o << "Pausing " << core->getName() << "..." << std::endl;
+				o << "Pausing " << core->GetName() << "..." << std::endl;
 				loop.Pause();
 			}, "Pauses the core.");
 		rootMenu->Insert("status",
 			[&](std::ostream& o)
 			{
 				std::string status = "stopped";
-				if (loop.isPaused()) status = "paused";
-				else if (loop.isRunning()) status = "running";
+				if (loop.IsPaused()) status = "paused";
+				else if (loop.IsRunning()) status = "running";
 				o << status << std::endl;
 			}, "Gets the status of the core.");
 
-		Common::CoreState* systemCoreState = loop.systemInstance->getCoreState();
+		Common::CoreState* systemCoreState = loop.systemInstance->GetCoreState();
 		if (systemCoreState)
 		{
 			rootMenu->Insert("state",
@@ -206,32 +203,32 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				{
 					loop.AcquireLock();
 
-					for (Common::CoreState::DebugRegisterInfo& info : systemCoreState->getRegisters())
-						o << info.getFormatted() << std::endl;
+					for (Common::CoreState::DebugRegisterInfo& info : systemCoreState->GetRegisters())
+						o << info.GetFormatted() << std::endl;
 
 					loop.Unlock();
 				}, "Display the core state registers.");
 		}
 
 		std::unordered_map<Common::Core*, u32> duplicateCounts;
-		for (const std::shared_ptr<Common::CoreInstance>& instance : loop.systemInstance->getInstances())
+		for (const std::shared_ptr<Common::CoreInstance>& instance : loop.systemInstance->GetInstances())
 		{
 			Common::InstructionBasedCoreInstance* instructionBasedInstance = dynamic_cast<Common::InstructionBasedCoreInstance*>(instance.get());
 
-			std::string coreName = instance->getCore()->getName();
-			if (duplicateCounts[instance->getCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[instance->getCore()]);
+			std::string coreName = instance->GetCore()->GetName();
+			if (duplicateCounts[instance->GetCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[instance->GetCore()]);
 
 			auto coreMenu = std::make_unique<cli::Menu>(coreName);
 
 			coreMenu->Insert("info",
 				[&](std::ostream& o) 
 				{
-					o << "Name: " << instance->getCore()->getName() << std::endl;
-					o << "Description: " << instance->getCore()->getDescription() << std::endl;
+					o << "Name: " << instance->GetCore()->GetName() << std::endl;
+					o << "Description: " << instance->GetCore()->GetDescription() << std::endl;
 					o << "Is Instruction Based: " << (instructionBasedInstance ? "Yes" : "No") << std::endl;
 				}, "Display general info about this core.");
 
-			Common::CoreState* coreState = instance->getCoreState();
+			Common::CoreState* coreState = instance->GetCoreState();
 			if (coreState)
 			{
 				coreMenu->Insert("state",
@@ -239,8 +236,8 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 					{
 						loop.AcquireLock();
 
-						for (Common::CoreState::DebugRegisterInfo& info : coreState->getRegisters())
-							o << info.getFormatted() << std::endl;
+						for (Common::CoreState::DebugRegisterInfo& info : coreState->GetRegisters())
+							o << info.GetFormatted() << std::endl;
 
 						loop.Unlock();
 					}, "Display Core State Registers.");
@@ -260,12 +257,6 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 			o << "Goodbye..." << std::endl; 
 		});
 
-		if (useRunLoop)
-		{
-			if (pauseOnStart) loop.Pause();
-			loop.Start();
-		}
-
 		sched.Run();
 	}
 }
@@ -274,11 +265,11 @@ int main(int argc, char** argv)
 {
 	Common::CoreLoader coreLoader("game-emu-cores");
 
-	const std::vector<Common::Core*>& loadedCores = coreLoader.getLoadedCores();
+	const std::vector<Common::Core*>& loadedCores = coreLoader.GetLoadedCores();
 
 	std::unordered_map<std::string, Common::Core*> cores;
 	for (Common::Core* core : loadedCores)
-		if (core->getType() == Common::Core::Type::System) cores[core->getName()] = core;
+		if (core->GetType() == Common::Core::Type::System) cores[core->GetName()] = core;
 
 	const std::vector<std::string> args(argv + 1, argv + argc);
 
@@ -306,8 +297,8 @@ int main(int argc, char** argv)
 			std::cout << "Cores: " << std::endl;
 			for (Common::Core* loadedCore : loadedCores)
 			{
-				if (loadedCore->getType() == Common::Core::Type::System)
-					std::cout << " " << loadedCore->getName() << ": " << loadedCore->getDescription() << std::endl;
+				if (loadedCore->GetType() == Common::Core::Type::System)
+					std::cout << " " << loadedCore->GetName() << ": " << loadedCore->GetDescription() << std::endl;
 			}
 		}
 		else if (showAllCores)
@@ -316,7 +307,7 @@ int main(int argc, char** argv)
 			for (Common::Core* loadedCore : loadedCores)
 			{
 				std::string coreType = "";
-				switch (loadedCore->getType())
+				switch (loadedCore->GetType())
 				{
 				case Common::Core::Type::Processor:
 					coreType = "(Processor)";
@@ -328,7 +319,7 @@ int main(int argc, char** argv)
 					coreType = "(System)";
 					break;
 				}
-				std::cout << " " << loadedCore->getName() << ": " << loadedCore->getDescription() << " " << coreType << std::endl;
+				std::cout << " " << loadedCore->GetName() << ": " << loadedCore->GetDescription() << " " << coreType << std::endl;
 			}
 		}
 		else std::cout << parser;

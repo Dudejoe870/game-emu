@@ -2,7 +2,7 @@
 
 namespace GameEmu::Cores::Processor::SM83
 {
-	InstructionDecoder::Instruction* InstructionDecoder::getInstruction(const std::vector<u64>& opcodes)
+	InstructionDecoder::Instruction* InstructionDecoder::GetInstruction(const std::vector<u64>& opcodes)
 	{
 		if (opcodes.empty()) return nullptr;
 
@@ -38,24 +38,24 @@ namespace GameEmu::Cores::Processor::SM83
 		DecodeInfo info;
 
 		u64 firstOpcode = 0;
-		if (!stream.getNext(firstOpcode)) return DecodeInfo();
+		if (!stream.GetNext(firstOpcode)) return DecodeInfo();
 		info.opcodes.push_back(firstOpcode);
 
 		if (firstOpcode == 0xCB) // CB Prefix
 		{
 			u64 secondOpcode = 0;
-			if (!stream.getNext(secondOpcode)) return DecodeInfo();
+			if (!stream.GetNext(secondOpcode)) return DecodeInfo();
 			info.opcodes.push_back(secondOpcode);
 		}
 
-		info.instruction = getInstruction(info.opcodes);
+		info.instruction = GetInstruction(info.opcodes);
 		if (!info.instruction) return info;
 
 		u32 operands = info.instruction->length - static_cast<u32>(info.opcodes.size());
 		for (u32 i = 0; i < operands; ++i)
 		{
 			u64 operand = 0;
-			if (!stream.getNext(operand)) return DecodeInfo();
+			if (!stream.GetNext(operand)) return DecodeInfo();
 			info.operands.push_back(operand);
 		}
 
@@ -74,7 +74,7 @@ namespace GameEmu::Cores::Processor::SM83
 
 	Common::CoreInstance::ReturnStatus Instance::Init()
 	{
-		state.idmem = getAddressSpace("idmem");
+		state.idmem = GetAddressSpace("idmem");
 
 		Fetch();
 		return ReturnStatus::Success;
@@ -121,12 +121,12 @@ namespace GameEmu::Cores::Processor::SM83
 		return DisassembleImpl<u8, std::endian::little, true>(data);
 	}
 
-	Common::CoreState* Instance::getCoreState()
+	Common::CoreState* Instance::GetCoreState()
 	{
 		return &state;
 	}
 
-	std::chrono::nanoseconds Instance::getStepPeriod()
+	std::chrono::nanoseconds Instance::GetStepPeriod()
 	{
 		return stepPeriod;
 	}
@@ -136,27 +136,28 @@ namespace GameEmu::Cores::Processor::SM83
 	{
 	}
 
-	std::string Core::getName()
+	std::string Core::GetName()
 	{
 		return "sm83";
 	}
 
-	std::string Core::getDescription()
+	std::string Core::GetDescription()
 	{
 		return "A Core emulating a SM83 microprocessor.";
 	}
 
-	Common::Core::Type Core::getType()
+	Common::Core::Type Core::GetType()
 	{
 		return Common::Core::Type::Processor;
 	}
 
-	std::unordered_map<std::string, Common::PropertyValue> Core::getDefaultProperties()
+	std::unordered_map<std::string, Common::PropertyValue> Core::GetDefaultProperties()
 	{
 		return { { "freq", static_cast<s64>(1050000) } };
 	}
 
-	std::shared_ptr<Common::CoreInstance> Core::createNewInstance(Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
+	std::shared_ptr<Common::CoreInstance> Core::CreateNewInstance(
+		Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
 	{
 		return std::make_shared<Instance>(this, runState, properties);
 	}

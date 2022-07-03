@@ -29,7 +29,7 @@ namespace GameEmu::Common
 		/*
 		 Get a pointer to a dependency.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT Core* getDependency(std::string coreName);
+		LIBGAMEEMU_COMMON_DLL_EXPORT Core* GetDependency(std::string coreName);
 
 		/*
 		 Initially loads the Core.
@@ -42,26 +42,27 @@ namespace GameEmu::Common
 		/*
 		 Returns the Cores name.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string getName();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string GetName();
 
 		/*
 		 Returns a short description of the Core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string getDescription();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string GetDescription();
 
 		/*
 		 Returns the default property values for this Core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unordered_map<std::string, PropertyValue> getDefaultProperties();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unordered_map<std::string, PropertyValue> GetDefaultProperties();
 
 		/*
 		 Returns the Core type.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual Type getType();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual Type GetType();
 
 		/*
 		 Creates a new Core instance.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::shared_ptr<CoreInstance> createNewInstance(RunState& runState, std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::shared_ptr<CoreInstance> CreateNewInstance(
+			RunState& runState, std::unordered_map<std::string, PropertyValue> properties = {});
 	};
 }

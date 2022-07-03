@@ -9,9 +9,9 @@ namespace GameEmu::Common
 	{
 	public:
 		/*
-		 Get next Instruction section (could be a byte stream like x86, could be a single full 32-bit instruction like mips)
+		 Get next Instruction section (could be a byte stream like x86, or could be a single full 32-bit instruction like MIPS)
 		*/
-		virtual bool getNext(u64& value) = 0;
+		virtual bool GetNext(u64& value) = 0;
 	};
 
 	template <class T, std::endian endian>
@@ -27,7 +27,7 @@ namespace GameEmu::Common
 			this->offset = offset;
 		}
 
-		bool getNext(u64& value)
+		bool GetNext(u64& value)
 		{
 			if (offset + (sizeof(T)-1) >= data.size()) return false;
 			u64 result = static_cast<u64>(
