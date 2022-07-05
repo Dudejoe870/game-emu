@@ -23,25 +23,14 @@ namespace GameEmu::Common
 		std::function<T(T value)> readEvent;
 		std::function<T(T value, T writeValue)> writeEvent;
 
-		Register(CoreState* coreState, T& readValue, T& writeValue, const std::string& debugName, bool canDebug = true, std::string format = "{name}: {u64}", std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
+		Register(CoreState& coreState, T& readValue, T& writeValue, const std::string& debugName, bool canDebug = true, std::string format = "{name}: {u64}", std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
 		{
 			this->pReadValue = &readValue;
 			this->pWriteValue = &writeValue;
 			this->readEvent = readEvent;
 			this->writeEvent = writeEvent;
-			if (coreState && canDebug)
-			{
-				coreState->debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, format, pReadValue, endian));
-			}
-		}
-
-		// Not recommended usage.
-		Register(T& readValue, T& writeValue, std::function<T(T)> readEvent = nullptr, std::function<T(T, T)> writeEvent = nullptr)
-		{
-			this->pReadValue = &readValue;
-			this->pWriteValue = &writeValue;
-			this->readEvent = readEvent;
-			this->writeEvent = writeEvent;
+			if (canDebug)
+				coreState.debugRegisters.push_back(CoreState::DebugRegisterInfo(debugName, format, pReadValue, endian));
 		}
 
 		template<bool funcEvents = true>

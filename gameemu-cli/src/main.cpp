@@ -1,5 +1,5 @@
 /*
- game-emu-cli: A CLI tool for using and debugging game-emu cores built off the game-emu-common library.
+ game-emu-cli: A CLI tool for using and debugging game-emu cores built off the gameemu-common library.
 
 	Copyright 2022 John Henry Clemis
 
@@ -28,6 +28,7 @@
 
 #include <game-emu/common/runloop.h>
 #include <game-emu/common/logger.h>
+#include <game-emu/common/loggermanager.h>
 
 #include <args.hxx>
 
@@ -41,34 +42,48 @@ class CLILogger : public Common::Logger
 {
 private:
 	cli::Scheduler& sched;
-protected:
-	void LogInfoImpl(const std::string& info)
-	{
-		sched.Post([info]() { cli::Cli::cout() << "Info: " << info << std::endl; });
-	}
-
-	void LogWarningImpl(const std::string& warning)
-	{
-		sched.Post([warning]() { cli::Cli::cout() << "Warning: " << warning << std::endl; });
-	}
-
-	void LogErrorImpl(const std::string& error)
-	{
-		sched.Post([error]() { cli::Cli::cout() << "Error: " << error << std::endl; });
-	}
 public:
-	CLILogger(cli::Scheduler& sched)
+	CLILogger(cli::Scheduler& sched, const std::string& name) 
+		: Common::Logger(name), sched(sched)
+	{
+	}
+
+	void LogInfo(const std::string& info) override
+	{
+		sched.Post([info, this]() { cli::Cli::cout() << "Info: " << "[" << name << "] " << info << std::endl; });
+	}
+
+	void LogWarning(const std::string& warning) override
+	{
+		sched.Post([warning, this]() { cli::Cli::cout() << "Warning: " << "[" << name << "] " << warning << std::endl; });
+	}
+
+	void LogError(const std::string& error) override
+	{
+		sched.Post([error, this]() { cli::Cli::cout() << "Error: " << "[" << name << "] " << error << std::endl; });
+	}
+};
+
+class CLILoggerManager : public Common::LoggerManager
+{
+private:
+	cli::Scheduler& sched;
+public:
+	CLILoggerManager (cli::Scheduler& sched)
 		: sched(sched)
 	{
+	}
+
+	std::shared_ptr<Common::Logger> CreateLogger(const std::string& name) override
+	{
+		return std::make_shared<CLILogger>(sched, name);
 	}
 };
 
 void ParseCore(const std::string& progName, Common::Core* core, std::vector<std::string>::const_iterator beginArgs, std::vector<std::string>::const_iterator endArgs)
 {
 	std::unordered_map<std::string, Common::PropertyValue> defaultProperties = core->GetDefaultProperties();
-
-	std::unordered_map<std::string, Common::PropertyValue> propertyOverrides;
-	propertyOverrides.insert(defaultProperties.begin(), defaultProperties.end());
+	std::unordered_map<std::string, Common::PropertyValue> propertyOverrides(defaultProperties);
 
 	args::ArgumentParser parser(core->GetDescription());
 	parser.Prog(progName + " " + core->GetName());
@@ -163,9 +178,9 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 	if (beginArgs != endArgs)
 	{
 		cli::LoopScheduler sched;
-		CLILogger logger(sched);
+		CLILoggerManager logManager(sched);
 
-		Common::RunLoop loop(logger, core);
+		Common::RunLoop loop(logManager, core);
 
 		if (pauseOnStart) loop.Pause();
 		loop.Start(propertyOverrides);
@@ -195,53 +210,39 @@ void ParseCore(const std::string& progName, Common::Core* core, std::vector<std:
 				o << status << std::endl;
 			}, "Gets the status of the core.");
 
-		Common::CoreState* systemCoreState = loop.systemInstance->GetCoreState();
-		if (systemCoreState)
+		const Common::CoreState& systemCoreState = loop.systemInstance->GetCoreState();
+		rootMenu->Insert("state",
+			[&](std::ostream& o)
+			{
+				for (const Common::CoreState::DebugRegisterInfo& info : systemCoreState.GetRegisters())
+					o << info.GetFormatted() << std::endl;
+			}, "Display the core state registers.");
+
+		std::unordered_map<const Common::Core*, u32> duplicateCounts;
+		for (const std::shared_ptr<Common::CoreInstance>& child : loop.systemInstance->GetChildren())
 		{
-			rootMenu->Insert("state",
-				[&](std::ostream& o)
-				{
-					loop.AcquireLock();
-
-					for (Common::CoreState::DebugRegisterInfo& info : systemCoreState->GetRegisters())
-						o << info.GetFormatted() << std::endl;
-
-					loop.Unlock();
-				}, "Display the core state registers.");
-		}
-
-		std::unordered_map<Common::Core*, u32> duplicateCounts;
-		for (const std::shared_ptr<Common::CoreInstance>& instance : loop.systemInstance->GetInstances())
-		{
-			Common::InstructionBasedCoreInstance* instructionBasedInstance = dynamic_cast<Common::InstructionBasedCoreInstance*>(instance.get());
-
-			std::string coreName = instance->GetCore()->GetName();
-			if (duplicateCounts[instance->GetCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[instance->GetCore()]);
+			std::string coreName = child->GetCore()->GetName();
+			if (duplicateCounts[child->GetCore()]++ > 0) coreName += "-" + std::to_string(duplicateCounts[child->GetCore()]);
 
 			auto coreMenu = std::make_unique<cli::Menu>(coreName);
 
+			const std::shared_ptr<Common::InstructionBasedCoreInstance> instructionBasedInstance =
+				std::dynamic_pointer_cast<Common::InstructionBasedCoreInstance>(child);
 			coreMenu->Insert("info",
 				[&](std::ostream& o) 
 				{
-					o << "Name: " << instance->GetCore()->GetName() << std::endl;
-					o << "Description: " << instance->GetCore()->GetDescription() << std::endl;
+					o << "Name: " << child->GetCore()->GetName() << std::endl;
+					o << "Description: " << child->GetCore()->GetDescription() << std::endl;
 					o << "Is Instruction Based: " << (instructionBasedInstance ? "Yes" : "No") << std::endl;
 				}, "Display general info about this core.");
 
-			Common::CoreState* coreState = instance->GetCoreState();
-			if (coreState)
-			{
-				coreMenu->Insert("state",
-					[&](std::ostream& o)
-					{
-						loop.AcquireLock();
-
-						for (Common::CoreState::DebugRegisterInfo& info : coreState->GetRegisters())
-							o << info.GetFormatted() << std::endl;
-
-						loop.Unlock();
-					}, "Display Core State Registers.");
-			}
+			const Common::CoreState& coreState = child->GetCoreState();
+			coreMenu->Insert("state",
+				[&](std::ostream& o)
+				{
+					for (const Common::CoreState::DebugRegisterInfo& info : coreState.GetRegisters())
+						o << info.GetFormatted() << std::endl;
+				}, "Display Core State Registers.");
 
 			rootMenu->Insert(std::move(coreMenu));
 		}
@@ -295,7 +296,7 @@ int main(int argc, char** argv)
 		else if (showCores)
 		{
 			std::cout << "Cores: " << std::endl;
-			for (Common::Core* loadedCore : loadedCores)
+			for (const Common::Core* loadedCore : loadedCores)
 			{
 				if (loadedCore->GetType() == Common::Core::Type::System)
 					std::cout << " " << loadedCore->GetName() << ": " << loadedCore->GetDescription() << std::endl;
@@ -304,7 +305,7 @@ int main(int argc, char** argv)
 		else if (showAllCores)
 		{
 			std::cout << "Cores: " << std::endl;
-			for (Common::Core* loadedCore : loadedCores)
+			for (const Common::Core* loadedCore : loadedCores)
 			{
 				std::string coreType = "";
 				switch (loadedCore->GetType())

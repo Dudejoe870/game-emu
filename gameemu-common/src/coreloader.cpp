@@ -26,12 +26,12 @@ namespace GameEmu::Common
 
 		for (dynalo::library& lib : coreLibraries)
 		{
-			auto GameEmuInitCore = lib.get_function<Core*(CoreLoader*)>("GameEmuInitCore");
-			cores.push_back(GameEmuInitCore(this));
+			auto GameEmuInitCore = lib.get_function<Core*(CoreLoader&)>("GameEmuInitCore");
+			cores.push_back(GameEmuInitCore(*this));
 		}
 	}
 
-	CoreLoader::~CoreLoader() 
+	CoreLoader::~CoreLoader()
 	{
 		for (Core* core : cores)
 			delete core;

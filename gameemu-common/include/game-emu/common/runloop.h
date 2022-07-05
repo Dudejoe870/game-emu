@@ -17,7 +17,6 @@ namespace GameEmu::Common
 	{
 	private:
 		// Common Variables for both Single-Threading, and Multithreading.
-		std::mutex threadMutex;
 		std::thread runThread;
 
 		// Synchronization for Multithreading, to insure that the System doesn't start until all the Cores have started, coming out of a pause.
@@ -26,7 +25,6 @@ namespace GameEmu::Common
 		struct CoreInfo
 		{
 			std::thread thread;
-			std::mutex mutex;
 			std::atomic<bool> ready;
 
 			CoreInfo(std::thread&& thread)
@@ -49,6 +47,12 @@ namespace GameEmu::Common
 		std::atomic<bool> paused;
 
 		/*
+		 The current System stepPeriod for Single-Threading 
+		 (equals the smallest step for any of the cores).
+		*/
+		std::chrono::nanoseconds stepPeriod;
+
+		/*
 		 Wait at the end of a Core loop to pad the time 
 		 if the Core step function was much faster than the real time it takes on hardware to step.
 		*/
@@ -68,7 +72,7 @@ namespace GameEmu::Common
 
 		/*
 		 The Run Loop, with two templated versions. One for multithreading with extra synchronization checks, 
-		 and one without that just forloops through all the cores, suitable for simpler systems.
+		 and one without that just loops through all the cores, suitable for simpler systems.
 		 (Should be noted that individual cores can still create new threads even without multithreading enabled, 
 		 it's just that they'll have to handle timing / pausing / synchronization themselves)
 		*/
@@ -78,8 +82,8 @@ namespace GameEmu::Common
 			systemInstance->Init();
 			if constexpr (!multithreaded)
 			{
-				for (const std::shared_ptr<CoreInstance>& instance : systemInstance->GetInstances())
-					instance->Init();
+				for (const std::shared_ptr<CoreInstance>& child : systemInstance->GetChildren())
+					child->Init();
 			}
 
 			while (running)
@@ -107,30 +111,49 @@ namespace GameEmu::Common
 					}
 				}
 
-				threadMutex.lock();
 				auto startTime = std::chrono::steady_clock::now();
+				if (startTime >= systemTimingInfo.nextStep)
+				{
+					if (systemInstance->Step() != CoreInstance::ReturnStatus::Success)
+						Pause();
+				}
+				std::chrono::nanoseconds systemPeriod = systemInstance->GetStepPeriod();
 
+				auto childrenStartTime = std::chrono::steady_clock::now();
+				systemTimingInfo.nextStep = childrenStartTime + systemPeriod;
+				if (systemPeriod < stepPeriod) stepPeriod = systemPeriod;
+				
 				if constexpr (!multithreaded)
 				{
-					for (u32 i = 0; i < systemInstance->GetInstances().size(); ++i)
+					if (!paused && !systemInstance->paused)
 					{
-						const std::shared_ptr<CoreInstance>& instance = systemInstance->GetInstances()[i];
-						if (!instance->paused)
+						for (u32 i = 0; i < systemInstance->GetChildren().size(); ++i)
 						{
-							if (std::chrono::steady_clock::now() >= timingInfo[i].nextStep)
+							const std::shared_ptr<CoreInstance>& child = systemInstance->GetChildren()[i];
+							if (!child->paused)
 							{
-								if (instance->Step() != CoreInstance::ReturnStatus::Success)
-									Pause();
+								if (childrenStartTime >= timingInfo[i].nextStep)
+								{
+									if (child->Step() != CoreInstance::ReturnStatus::Success)
+										Pause();
+								}
 							}
-							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instance->GetStepPeriod();
+
+							std::chrono::nanoseconds instancePeriod = child->GetStepPeriod();
+							timingInfo[i].nextStep = std::chrono::steady_clock::now() + instancePeriod;
+							if (instancePeriod < stepPeriod) stepPeriod = instancePeriod;
+
+							if (paused || systemInstance->paused) break;
 						}
 					}
 				}
 
-				threadMutex.unlock();
-				auto endTime = std::chrono::steady_clock::now();
+				if (stepPeriod > std::chrono::nanoseconds::zero())
+				{
+					auto endTime = std::chrono::steady_clock::now();
 
-				WaitForPeriod(stepPeriod, startTime, endTime);
+					WaitForPeriod(stepPeriod, startTime, endTime);
+				}
 			}
 		}
 
@@ -138,11 +161,6 @@ namespace GameEmu::Common
 		 The Loop implementation for individual Cores when Multithreading.
 		*/
 		void LoopMultithreadedCore(const std::shared_ptr<CoreInstance>& instance, s32 coreIndex);
-
-		/*
-		 The current System stepPeriod for Single-Threading (equals the smallest step for any of the cores).
-		*/
-		std::chrono::nanoseconds stepPeriod;
 
 		/*
 		 Timing info for each Core, stores when the next step for that core is.
@@ -162,19 +180,19 @@ namespace GameEmu::Common
 			}
 		};
 		std::vector<InstanceTimingInfo> timingInfo;
+		InstanceTimingInfo systemTimingInfo;
 	public:
 		Core* currentSystem;
-		std::shared_ptr<CoreInstance> systemInstance;
+		std::shared_ptr<SystemInstance> systemInstance;
 
-		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop();
-		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop(Logger& logger, Core* system);
+		LIBGAMEEMU_COMMON_DLL_EXPORT RunLoop(LoggerManager& logManager, Core* system);
 
 		LIBGAMEEMU_COMMON_DLL_EXPORT ~RunLoop();
 
 		/*
 		 Starts the main system thread and runs the current system core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT void Start(std::unordered_map<std::string, PropertyValue> properties = {});
+		LIBGAMEEMU_COMMON_DLL_EXPORT void Start(const std::unordered_map<std::string, PropertyValue>& propertyOverrides = {});
 
 		/*
  		 Sets the system core to be run after calling Start.
@@ -214,24 +232,5 @@ namespace GameEmu::Common
 		 Returns whether or not the current System Core is running.
 		*/
 		LIBGAMEEMU_COMMON_DLL_EXPORT bool IsRunning();
-
-		/*
-		 This acquires the thread mutex basically stopping any Cores from running while the caller accesses any current Core states.
-		 It is heavily recommended to call this if accessing any Core states from outside threads (example: for debugging purposes)
-		*/
-		inline void AcquireLock()
-		{
-			threadMutex.lock();
-			for (CoreInfo& core : cores) core.mutex.lock();
-		}
-
-		/*
-		 Unlocks the thread mutex. Call this after finishing access to the Core state.
-		*/
-		inline void Unlock()
-		{
-			threadMutex.unlock();
-			for (CoreInfo& core : cores) core.mutex.unlock();
-		}
 	};
 }

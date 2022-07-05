@@ -2,12 +2,12 @@
 
 namespace GameEmu::Cores::Processor::SM83
 {
-	InstructionDecoder::Instruction* InstructionDecoder::GetInstruction(const std::vector<u64>& opcodes)
+	const InstructionDecoder::Instruction* InstructionDecoder::GetInstruction(const std::vector<u64>& opcodes)
 	{
 		if (opcodes.empty()) return nullptr;
 
 		u64 opcode = opcodes[0];
-		Instruction* instructionTable = instructions.data();
+		const Instruction* instructionTable = instructions.data();
 
 		// If the opcode is prefixed with 0xCB, switch to the 0xCB Instruction table.
 		if (opcodes.size() > 1 && opcodes[0] == 0xCB)
@@ -18,24 +18,26 @@ namespace GameEmu::Cores::Processor::SM83
 		}
 		else if (opcodes[0] >= instructions.size()) return nullptr;
 
-		Instruction* inst = &instructionTable[opcode];
-		if (!inst->set) return nullptr;
+		const Instruction* inst = &instructionTable[opcode];
+		if (inst->length == 0)
+			return nullptr;
 		return inst;
 	}
 
 	std::string InstructionDecoder::Disassemble(const DecodeInfo& info)
 	{
-		if (!info.instruction) return "invalid instruction";
+		if (!info.instruction) return "illegal";
 		return fmt::format(fmt::runtime(info.instruction->assemblyFormat),
-			fmt::arg("d8", (info.operands.size() > 0) ? info.operands[0] : 0ull),
-			fmt::arg("d16", (info.operands.size() > 1) ? 
+			fmt::arg("d8", (info.operands.size() >= 1) ? info.operands[0] : 0ull),
+			fmt::arg("ds8", (info.operands.size() >= 1) ? static_cast<s8>(info.operands[0]) : 0ull),
+			fmt::arg("d16", (info.operands.size() >= 2) ? 
 				Common::Util::ToNativeEndian<std::endian::little>(
-					*reinterpret_cast<const u16*>(info.operands.data())) : 0ull)); // This optimization may seem a little over the top, but if you're disassembling a large chunk of code, this could add up.
+					*reinterpret_cast<const u16*>(info.operands.data())) : 0ull));
 	}
 
 	InstructionDecoder::DecodeInfo InstructionDecoder::Decode(Common::InstructionStream& stream)
 	{
-		DecodeInfo info;
+		DecodeInfo info(2, 2);
 
 		u64 firstOpcode = 0;
 		if (!stream.GetNext(firstOpcode)) return DecodeInfo();
@@ -62,19 +64,19 @@ namespace GameEmu::Cores::Processor::SM83
 		return info;
 	}
 
-	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& properties)
-		: Common::InstructionBasedCoreInstance(core, runState, properties, decoder)
+	Instance::Instance(Common::Core* core, Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& propertyOverrides)
+		: Common::InstructionBasedCoreInstance(core, runState, propertyOverrides, decoder)
 	{
 		stepPeriod = std::chrono::nanoseconds(1000000000U / static_cast<u64>(std::get<s64>(this->properties["freq"])));
 		cycleCounter = 0;
 
-		runState.logger->LogInfo(fmt::format("SM83 initialized with frequency {}hz.", 
+		logger->LogInfo(fmt::format("SM83 initialized with frequency {}hz.",
 			static_cast<u64>(std::get<s64>(this->properties["freq"]))));
 	}
 
 	Common::CoreInstance::ReturnStatus Instance::Init()
 	{
-		state.idmem = GetAddressSpace("idmem");
+		state.idmem = GetMemoryMap("idmem");
 
 		Fetch();
 		return ReturnStatus::Success;
@@ -89,30 +91,27 @@ namespace GameEmu::Cores::Processor::SM83
 			if (!decodeInfo.opcodes.empty())
 			{
 				if (decodeInfo.opcodes.size() <= 1)
-					runState.logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}",
+					logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}",
 						static_cast<u8>(decodeInfo.opcodes[0])));
 				else
-					runState.logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}{:02x}",
+					logger->LogError(fmt::format("SM83 Unknown Instruction 0x{:02x}{:02x}",
 						static_cast<u8>(decodeInfo.opcodes[0]),
 						static_cast<u8>(decodeInfo.opcodes[1])));
 			}
 			return ReturnStatus::UnknownInstruction;
 		}
+		
+		const InstructionDecoder::Instruction* inst = 
+			reinterpret_cast<const InstructionDecoder::Instruction*>(decodeInfo.instruction);
 
 		// Execute the Instruction
-		if (cycleCounter < decodeInfo.instruction->interpFunctions.size())
-			decodeInfo.instruction->interpFunctions[cycleCounter](&state, decodeInfo.operands);
-
-		// Fetch the next instruction on the same Cycle as execution if there's only one cycle.
-		if (state.mCycles == 1) Fetch();
-		else if (cycleCounter < state.mCycles)
-		{
-			// Fetch the next instruction if this is the last Cycle before the next execution.
-			if (cycleCounter == state.mCycles - 1) Fetch();
-		}
+		if (cycleCounter < inst->interpreterCycles.size())
+			inst->interpreterCycles[cycleCounter](state, decodeInfo.operands, decodeInfo.opcodes);
+		
+		// Fetch the next instruction if this is the last Cycle before the next execution.
+		if (cycleCounter < state.mCycles && cycleCounter == state.mCycles - 1) Fetch();
 
 		++cycleCounter;
-
 		return ReturnStatus::Success;
 	}
 
@@ -120,45 +119,45 @@ namespace GameEmu::Cores::Processor::SM83
 	{
 		return DisassembleImpl<u8, std::endian::little, true>(data);
 	}
-
-	Common::CoreState* Instance::GetCoreState()
+	
+	const Common::CoreState& Instance::GetCoreState() const
 	{
-		return &state;
+		return state;
 	}
 
-	std::chrono::nanoseconds Instance::GetStepPeriod()
+	std::chrono::nanoseconds Instance::GetStepPeriod() const
 	{
 		return stepPeriod;
 	}
 
-	Core::Core(Common::CoreLoader* loader)
+	Core::Core(Common::CoreLoader& loader)
 		: Common::Core(loader)
 	{
 	}
 
-	std::string Core::GetName()
+	const std::string Core::GetName() const
 	{
 		return "sm83";
 	}
-
-	std::string Core::GetDescription()
+	
+	const std::string Core::GetDescription() const
 	{
 		return "A Core emulating a SM83 microprocessor.";
 	}
 
-	Common::Core::Type Core::GetType()
+	Common::Core::Type Core::GetType() const
 	{
 		return Common::Core::Type::Processor;
 	}
 
-	std::unordered_map<std::string, Common::PropertyValue> Core::GetDefaultProperties()
+	std::unordered_map<std::string, Common::PropertyValue> Core::GetDefaultProperties() const
 	{
 		return { { "freq", static_cast<s64>(1050000) } };
 	}
 
 	std::shared_ptr<Common::CoreInstance> Core::CreateNewInstance(
-		Common::RunState& runState, std::unordered_map<std::string, Common::PropertyValue> properties)
+		Common::RunState& runState, const std::unordered_map<std::string, Common::PropertyValue>& propertyOverrides)
 	{
-		return std::make_shared<Instance>(this, runState, properties);
+		return std::make_shared<Instance>(this, runState, propertyOverrides);
 	}
 }

@@ -4,29 +4,23 @@
 
 namespace GameEmu::Common
 {
+	/*
+	 thread-safe Logger
+
+	 Implementations of this class should be thread-safe
+	*/
 	class Logger
 	{
 	protected:
-		virtual void LogInfoImpl(const std::string& info) = 0;
-		virtual void LogWarningImpl(const std::string& warning) = 0;
-		virtual void LogErrorImpl(const std::string& error) = 0;
+		std::string name;
 	public:
-		inline void LogInfo(const std::string& info)
+		Logger(const std::string& name)
 		{
-			if (!this) return;
-			LogInfoImpl(info);
+			this->name = name;
 		}
 
-		inline void LogWarning(const std::string& warning)
-		{
-			if (!this) return;
-			LogWarningImpl(warning);
-		}
-
-		inline void LogError(const std::string& error)
-		{
-			if (!this) return;
-			LogErrorImpl(error);
-		}
+		virtual void LogInfo(const std::string& info) = 0;
+		virtual void LogWarning(const std::string& warning) = 0;
+		virtual void LogError(const std::string& error) = 0;
 	};
 }

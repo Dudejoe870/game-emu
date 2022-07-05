@@ -27,7 +27,7 @@ namespace GameEmu::Common
 			this->offset = offset;
 		}
 
-		bool GetNext(u64& value)
+		bool GetNext(u64& value) override
 		{
 			if (offset + (sizeof(T)-1) >= data.size()) return false;
 			u64 result = static_cast<u64>(

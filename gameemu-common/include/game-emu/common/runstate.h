@@ -1,23 +1,21 @@
 #pragma once
 
 #include <game-emu/common/stdcommon.h>
-#include <game-emu/common/logger.h>
+#include <game-emu/common/loggermanager.h>
 
 namespace GameEmu::Common
 {
 	class RunState
 	{
+	protected:
+		std::shared_ptr<Logger> logger;
 	public:
-		Logger* logger;
+		LoggerManager& logManager;
 
-		RunState()
+		RunState(LoggerManager& logManager)
+			: logManager(logManager)
 		{
-			this->logger = nullptr;
-		}
-
-		RunState(Logger& logger)
-		{
-			this->logger = &logger;
+			this->logger = logManager.CreateLogger("game-emu");
 		}
 
 		virtual bool IsRunning() = 0;

@@ -4,14 +4,8 @@
 
 namespace GameEmu::Common
 {
-	RunLoop::RunLoop()
-	{
-		this->currentSystem = nullptr;
-		this->systemInstance = nullptr;
-	}
-
-	RunLoop::RunLoop(Logger& logger, Core* system)
-		: RunState(logger)
+	RunLoop::RunLoop(LoggerManager& logManager, Core* system)
+		: RunState(logManager)
 	{
 		SetSystemCore(system);
 		this->systemInstance = nullptr;
@@ -48,20 +42,18 @@ namespace GameEmu::Common
 				continue;
 			}
 
-			cores[coreIndex].mutex.lock();
 			auto startTime = std::chrono::steady_clock::now();
 
 			if (instance->Step() != CoreInstance::ReturnStatus::Success)
 				Pause();
 
-			cores[coreIndex].mutex.unlock();
 			auto endTime = std::chrono::steady_clock::now();
 
 			WaitForPeriod(instance->GetStepPeriod(), startTime, endTime);
 		}
 	}
 
-	void RunLoop::Start(std::unordered_map<std::string, PropertyValue> properties)
+	void RunLoop::Start(const std::unordered_map<std::string, PropertyValue>& propertyOverrides)
 	{
 		if (currentSystem)
 		{
@@ -73,20 +65,23 @@ namespace GameEmu::Common
 					if (!running && core.thread.joinable()) core.thread.join();
 			}
 
-			this->systemInstance = currentSystem->CreateNewInstance(*this, properties);
+			this->systemInstance = std::dynamic_pointer_cast<SystemInstance>(
+				currentSystem->CreateNewInstance(*this, propertyOverrides));
+			if (!this->systemInstance)
+				throw std::runtime_error("SetSystemCore: Core isn't of a System type!");
 
 			running = true;
 
 			stepPeriod = std::chrono::nanoseconds::zero();
-			for (const std::shared_ptr<CoreInstance>& instance : systemInstance->GetInstances())
+			for (const std::shared_ptr<CoreInstance>& child : systemInstance->GetChildren())
 			{
 				if (systemInstance->IsMultithreaded())
 				{
 					cores.push_back(CoreInfo(
-						std::thread(&RunLoop::LoopMultithreadedCore, this, std::ref(instance), static_cast<s32>(cores.size()) - 1)));
+						std::thread(&RunLoop::LoopMultithreadedCore, this, std::ref(child), static_cast<s32>(cores.size()) - 1)));
 				}
 
-				std::chrono::nanoseconds instancePeriod = instance->GetStepPeriod();
+				std::chrono::nanoseconds instancePeriod = child->GetStepPeriod();
 				if (instancePeriod < stepPeriod || stepPeriod == std::chrono::nanoseconds::zero()) stepPeriod = instancePeriod;
 			}
 
@@ -99,7 +94,7 @@ namespace GameEmu::Common
 			}
 			else
 			{
-				timingInfo.resize(systemInstance->GetInstances().size());
+				timingInfo.resize(systemInstance->GetChildren().size());
 				runThread = std::thread(&RunLoop::Loop<false>, this);
 			}
 		}

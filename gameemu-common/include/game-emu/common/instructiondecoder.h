@@ -14,11 +14,6 @@ namespace GameEmu::Common
 		struct Instruction
 		{
 			/*
-			 Whether or not this instruction is valid.
-			*/
-			bool set;
-
-			/*
 			 A format string representing this instruction in assembly language.
 			*/
 			std::string assemblyFormat;
@@ -28,20 +23,10 @@ namespace GameEmu::Common
 			*/
 			u8 length;
 
-			using InterpreterFunction = std::function<void(CoreState* state, const std::vector<u64>& operands)>;
-			std::vector<InterpreterFunction> interpFunctions;
-
-			Instruction()
-			{
-				this->set = false;
-			}
-
-			Instruction(std::string assemblyFormat, unsigned char length, const std::vector<InterpreterFunction>& interpFunctions)
+			Instruction(std::string assemblyFormat, unsigned char length)
 			{
 				this->assemblyFormat = assemblyFormat;
 				this->length = length;
-				this->set = true;
-				this->interpFunctions = interpFunctions;
 			}
 		};
 
@@ -49,14 +34,22 @@ namespace GameEmu::Common
 		{
 			std::vector<u64> opcodes; // Could be just one value, or multiple, it's up the the implementation.
 			std::vector<u64> operands;
-			Instruction* instruction;
+			const Instruction* instruction;
 
 			DecodeInfo()
 			{
 				this->instruction = nullptr;
 			}
+			
+			DecodeInfo(std::size_t opcodesCapacity, std::size_t operandsCapacity)
+			{
+				opcodes.reserve(opcodesCapacity);
+				operands.reserve(operandsCapacity);
+				
+				this->instruction = nullptr;
+			}
 
-			DecodeInfo(const std::vector<u64>& opcodes, const std::vector<u64>& operands, Instruction* instruction)
+			DecodeInfo(const std::vector<u64>& opcodes, const std::vector<u64>& operands, const Instruction* instruction)
 			{
 				this->opcodes = opcodes;
 				this->operands = operands;
@@ -68,7 +61,7 @@ namespace GameEmu::Common
 		 Given the opcode(s), get a pointer to the instruction information (probably stored in a list that is indexed by the opcodes in some way)
 		 Should return nullptr if the instruction is invalid (doesn't exist or the "set" boolean is false)
 		*/
-		virtual Instruction* GetInstruction(const std::vector<u64>& opcodes) = 0;
+		virtual const Instruction* GetInstruction(const std::vector<u64>& opcodes) = 0;
 
 		/*
 		 Given a decoded instruction, using the instructions stored assembly format, return the formatted assembly instruction (for debugging purposes)

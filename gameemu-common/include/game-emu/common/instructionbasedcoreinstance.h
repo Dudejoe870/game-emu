@@ -31,12 +31,13 @@ namespace GameEmu::Common
 
 				result += decoder.Disassemble(decodeInfo) + '\n';
 
+				u8 instructionLength = std::max(u8(1), decodeInfo.instruction->length);
 				if constexpr (stopUnknownInst)
 				{
 					if (!decodeInfo.instruction) break;
-					currentOffset += decodeInfo.instruction->length;
+					currentOffset += instructionLength;
 				}
-				else currentOffset += (decodeInfo.instruction) ? decodeInfo.instruction->length : defaultInstructionSize;
+				else currentOffset += (decodeInfo.instruction) ? instructionLength : defaultInstructionSize;
 			}
 
 			return result;

@@ -17,7 +17,7 @@ namespace GameEmu::Common
 	class Core
 	{
 	private:
-		CoreLoader* loader;
+		CoreLoader& loader;
 	public:
 		enum class Type
 		{
@@ -29,40 +29,40 @@ namespace GameEmu::Common
 		/*
 		 Get a pointer to a dependency.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT Core* GetDependency(std::string coreName);
+		LIBGAMEEMU_COMMON_DLL_EXPORT Core* GetDependency(const std::string& coreName);
 
 		/*
 		 Initially loads the Core.
 		 Note: There is no guaranty of load order.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT Core(CoreLoader* loader);
+		LIBGAMEEMU_COMMON_DLL_EXPORT Core(CoreLoader& loader);
 
 		LIBGAMEEMU_COMMON_DLL_EXPORT virtual ~Core();
 
 		/*
 		 Returns the Cores name.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string GetName();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual const std::string GetName() const;
 
 		/*
 		 Returns a short description of the Core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::string GetDescription();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual const std::string GetDescription() const;
 
 		/*
 		 Returns the default property values for this Core.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unordered_map<std::string, PropertyValue> GetDefaultProperties();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::unordered_map<std::string, PropertyValue> GetDefaultProperties() const;
 
 		/*
 		 Returns the Core type.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual Type GetType();
+		LIBGAMEEMU_COMMON_DLL_EXPORT virtual Type GetType() const;
 
 		/*
 		 Creates a new Core instance.
 		*/
-		LIBGAMEEMU_COMMON_DLL_EXPORT virtual std::shared_ptr<CoreInstance> CreateNewInstance(
-			RunState& runState, std::unordered_map<std::string, PropertyValue> properties = {});
+		virtual std::shared_ptr<CoreInstance> CreateNewInstance(
+			RunState& runState, const std::unordered_map<std::string, PropertyValue>& propertyOverrides = {}) = 0;
 	};
 }

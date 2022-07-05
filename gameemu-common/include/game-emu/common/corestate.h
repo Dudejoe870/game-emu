@@ -24,12 +24,12 @@ namespace GameEmu::Common
 				this->endian = endian;
 			}
 
-			inline bool IsFloatingPoint()
+			inline bool IsFloatingPoint() const
 			{
 				return std::holds_alternative<float*>(pValue) || std::holds_alternative<double*>(pValue);
 			}
 
-			inline std::string GetFormatted()
+			inline std::string GetFormatted() const
 			{
 				return fmt::format(fmt::runtime(format), 
 					fmt::arg("name", name),
@@ -43,9 +43,8 @@ namespace GameEmu::Common
 			}
 
 			template <class T>
-			T GetValue()
+			T GetValue() const
 			{
-				// I am sorry for my sins. (this is debug code anyway so please don't make fun of me) - JHC
 				if (std::holds_alternative<u32*>(pValue))
 					return static_cast<T>(Util::ToNativeEndian(*std::get<u32*>(pValue), endian));
 				else if (std::holds_alternative<u64*>(pValue))
@@ -66,7 +65,7 @@ namespace GameEmu::Common
 	private:
 		std::vector<DebugRegisterInfo> debugRegisters;
 	public:
-		inline std::vector<DebugRegisterInfo>& GetRegisters()
+		inline const std::vector<DebugRegisterInfo>& GetRegisters() const
 		{
 			return debugRegisters;
 		}

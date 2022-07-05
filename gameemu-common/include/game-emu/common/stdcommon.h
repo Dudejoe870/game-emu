@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <memory>
 #include <filesystem>
@@ -22,6 +23,8 @@
 #include <fmt/core.h>
 #include <functional>
 #include <array>
+#include <algorithm>
+#include <deque>
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;

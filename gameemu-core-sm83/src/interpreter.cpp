@@ -2,10 +2,9 @@
 
 namespace GameEmu::Cores::Processor::SM83
 {
-	void Interpreter::NOP_CYC0(Common::CoreState* state, const std::vector<u64>& operands)
+	void Interpreter::NOP_CYC0(State& state, const std::vector<u64>& operands, const std::vector<u64>& opcodes)
 	{
-		State* z80State = static_cast<State*>(state);
-		z80State->PC += 1;
-		z80State->mCycles = 1;
+		state.PC += 1;
+		state.mCycles = 1;
 	}
 }

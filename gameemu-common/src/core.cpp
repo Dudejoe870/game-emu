@@ -7,42 +7,37 @@
 
 namespace GameEmu::Common
 {
-	Core::Core(GameEmu::Common::CoreLoader* loader)
+	Core::Core(GameEmu::Common::CoreLoader& loader)
+		: loader(loader)
 	{
-		this->loader = loader;
 	}
 
 	Core::~Core()
 	{
 	}
 
-	Core* Core::GetDependency(std::string coreName)
+	Core* Core::GetDependency(const std::string& coreName)
 	{
-		return loader->GetLoadedCore(coreName);
+		return loader.GetLoadedCore(coreName);
 	}
 
-	std::string Core::GetName()
+	const std::string Core::GetName() const
 	{
 		return "unknown";
 	}
 
-	std::string Core::GetDescription()
+	const std::string Core::GetDescription() const
 	{
 		return "";
 	}
 
-	std::unordered_map<std::string, PropertyValue> Core::GetDefaultProperties()
+	std::unordered_map<std::string, PropertyValue> Core::GetDefaultProperties() const
 	{
 		return { };
 	}
 
-	Core::Type Core::GetType()
+	Core::Type Core::GetType() const
 	{
 		return Core::Type::Processor;
-	}
-
-	std::shared_ptr<CoreInstance> Core::CreateNewInstance(RunState& runState, std::unordered_map<std::string, PropertyValue> properties)
-	{
-		return std::make_shared<CoreInstance>(this, runState, properties);
 	}
 }
